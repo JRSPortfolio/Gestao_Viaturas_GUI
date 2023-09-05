@@ -1,12 +1,8 @@
-from viaturas_helpdoc import *
+from viaturas_instrucoes import *
                     
 def main():
-    carros_ini = Viaturas_Arranque()
-    if not carros_ini.listar and not carros_ini.pesquisa and not carros_ini.adiciona and not carros_ini.remover:    
-        carros = ler_carros(FILEPATH)
-        menu(carros)
-    else:
-        carros_ini.arranque()
-    
+    carros = ler_carros(FILEPATH)
+    menu(carros)
+
 if __name__ == "__main__":
     main()
