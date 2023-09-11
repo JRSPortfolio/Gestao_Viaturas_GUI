@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import font
+from tkinter import font, ttk
 
 class janela_inicial(tk.Tk):
     def __init__(self):
@@ -14,7 +14,7 @@ class janela_inicial(tk.Tk):
         self.columnconfigure(0, weight = 1)
         self.columnconfigure(1, weight = 1)
         
-        fonts = font.families()
+        # fonts = font.families()
         title_font = ("Cascadia Mono", 16, "bold")
         button_font = ("Cascadia Mono", 12, "bold")
         
@@ -22,23 +22,53 @@ class janela_inicial(tk.Tk):
         self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 50, sticky = "ew")
         
         self.buttons(button_font)
-        self.menu(fonts)
-        
-        
-    def menu(self, fonts: tuple):
+        self.menu()
+          
+    def menu(self):
         self.menu_bar = tk.Menu(self)
         self.options = tk.Menu(self.menu_bar, tearoff = 0)
-        self.tipo_letra = tk.Menu(self.menu_bar, tearoff = 0)
+        # self.tipo_letra = tk.Menu(self.menu_bar, tearoff = 0)
         
+        self.options.add_command(label = "Alterar Tipo de Letra", command = self.janela_tipo_letra)
         self.options.add_command(label = "Sair", command = self.quit)
-        
-        for font in fonts:
-            self.tipo_letra.add_command(label = font, command = lambda f = font: self.change_font(f))
-        
+        # for font in fonts:
+        #     self.tipo_letra.add_command(label = font, command = lambda f = font: self.change_font(f))
+            
+        self.menu
         self.menu_bar.add_cascade(label = "Opções", menu = self.options)
-        self.menu_bar.add_cascade(label = "Alterar Tipo de Letra", menu = self.tipo_letra)
+        # self.menu_bar.add_cascade(label = "Alterar Tipo de Letra", menu = self.tipo_letra)
         
         self.config(menu = self.menu_bar)
+        
+    def janela_tipo_letra(self):
+        self.lista_fontes = tk.Toplevel(self)
+        self.lista_fontes.title("Alterar Tipo de Letra")
+        self.lista_fontes.geometry("700x500")
+        self.canvas = tk.Canvas(self.lista_fontes)
+        self.canvas.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+        
+        fonte_selecionada = tk.StringVar()
+        fonts = font.families()
+        
+        x = 0
+        y = 0
+        
+        for tipo in fonts:
+            ttk.Radiobutton(self.lista_fontes, text = tipo, variable = fonte_selecionada, value = tipo).grid(row = x, column = y)
+            y += 1
+            if y > 2:
+                y = 0
+                x += 1
+            
+        def seleccao():
+            escolha = fonte_selecionada.get()
+            if escolha:
+                self.change_font(self, escolha)
+                
+        ttk.Button(self.lista_fontes, text="Escolher", command = seleccao).pack()
+        
+        
         
     def buttons(self, button_font): 
         self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 15, height = 3,
