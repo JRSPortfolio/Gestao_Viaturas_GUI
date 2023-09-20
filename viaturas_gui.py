@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import font, ttk
+from tkinter import font, ttk, Scrollbar
+import winreg
 
 class janela_inicial(tk.Tk):
     def __init__(self):
@@ -40,36 +41,84 @@ class janela_inicial(tk.Tk):
         
         self.config(menu = self.menu_bar)
         
+    # def janela_tipo_letra(self):
+    #     self.lista_fontes = tk.Toplevel(self)
+    #     self.lista_fontes.title("Alterar Tipo de Letra")
+    #     self.lista_fontes.geometry("700x500")
+        
+    #     self.lista_fontes_canvas = tk.Canvas(self.lista_fontes)
+    #     self.lista_fontes_canvas.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+    #     self.fonts_frame = ttk.Frame(self.lista_fontes_canvas)
+    #     self.lista_fontes_canvas.create_window((0, 0), window = self.fonts_frame, anchor=tk.NW)
+    #     self.font_escolha_frame = ttk.Frame(self.lista_fontes)
+    #     self.font_escolha_frame.pack(side=tk.BOTTOM, pady=10)
+        
+    #     scrollbar = Scrollbar(self.lista_fontes, orient=tk.VERTICAL, command=self.lista_fontes_canvas.yview)
+    #     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    #     self.lista_fontes_canvas.configure(yscrollcommand=scrollbar.set)
+        
+    #     fonte_selecionada = tk.StringVar()
+    #     self.get_font_list()
+        
+    #     for i in self.font_list:
+    #         ttk.Radiobutton(self.fonts_frame, text=i, variable = fonte_selecionada, value=i).pack(anchor=tk.W)
+
+            
+    #     def seleccao():
+    #         escolha = fonte_selecionada.get()
+    #         if escolha:
+    #             self.change_font(escolha)
+                
+    #     ttk.Button(self.lista_fontes_canvas, text="Escolher", command = seleccao).pack(side=tk.BOTTOM, pady=10)
+    #     self.fonts_frame.update_idletasks()
+    #     self.lista_fontes_canvas.config(scrollregion=self.lista_fontes_canvas.bbox("all"))
+    
     def janela_tipo_letra(self):
         self.lista_fontes = tk.Toplevel(self)
         self.lista_fontes.title("Alterar Tipo de Letra")
-        self.lista_fontes.geometry("700x500")
-        self.canvas = tk.Canvas(self.lista_fontes)
-        self.canvas.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        self.lista_fontes.geometry("300x500")
         
+        self.lista_fontes_canvas = tk.Canvas(self.lista_fontes)
+        self.lista_fontes_canvas.grid(row=0, column=0, sticky="nsew")
+        
+        self.fonts_frame = ttk.Frame(self.lista_fontes_canvas)
+        self.lista_fontes_canvas.create_window((0, 0), window = self.fonts_frame, anchor=tk.NW)
+        self.font_escolha_frame = ttk.Frame(self.lista_fontes)
+        self.font_escolha_frame.grid(row=1, column=0, sticky="nsew")
+        
+        scrollbar = Scrollbar(self.lista_fontes, orient=tk.VERTICAL, command=self.lista_fontes_canvas.yview)
+        scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
+        self.lista_fontes_canvas.configure(yscrollcommand=scrollbar.set)
         
         fonte_selecionada = tk.StringVar()
-        fonts = font.families()
+        self.get_font_list()
         
-        x = 0
-        y = 0
-        
-        for tipo in fonts:
-            ttk.Radiobutton(self.lista_fontes, text = tipo, variable = fonte_selecionada, value = tipo).grid(row = x, column = y)
-            y += 1
-            if y > 2:
-                y = 0
-                x += 1
-            
         def seleccao():
             escolha = fonte_selecionada.get()
             if escolha:
-                self.change_font(self, escolha)
+                self.change_font(escolha)
                 
-        ttk.Button(self.lista_fontes, text="Escolher", command = seleccao).pack()
+        y = 0
         
+        for i in self.font_list:
+            ttk.Radiobutton(self.fonts_frame, text=i, variable = fonte_selecionada, value=i).grid(row=y, column=0, sticky="nsew")
+            y += 1
+                
+        ttk.Button(self.lista_fontes, text="Escolher", command = seleccao).grid(row = 1, column = 0, pady=20)
         
+        self.fonts_frame.update_idletasks()
+        self.lista_fontes_canvas.config(scrollregion=self.lista_fontes_canvas.bbox("all"))
         
+        self.lista_fontes.grid_rowconfigure(0, weight = 1)
+        self.lista_fontes.grid_rowconfigure(1, weight = 0)
+        self.lista_fontes.grid_columnconfigure(0, weight = 1)
+        self.lista_fontes.grid_columnconfigure(1, weight = 0)
+        
+        def on_mousewheel(event):
+            self.lista_fontes_canvas.yview_scroll(-1 * (event.delta // 120), "units")
+        self.lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
+                    
     def buttons(self, button_font): 
         self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 15, height = 3,
                                     font = button_font, command=lambda: print("click"))
@@ -99,6 +148,17 @@ class janela_inicial(tk.Tk):
         self.rem_viatura.config(font = (font_type, 12, "bold"))
         self.gravar_catalogo.config(font = (font_type, 12, "bold"))
         self.recarregar_catalogo.config(font = (font_type, 12, "bold"))
-    
+        
+    def get_font_list(self):
+        key_path = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+        self.font_list = []
+        font_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
+        for i in range(winreg.QueryInfoKey(font_key)[1]):
+            font_name, n, _ = winreg.EnumValue(font_key, i)
+            if font_name[:-11] in font.families():
+                self.font_list.append(font_name[:-11])   
+        winreg.CloseKey(font_key)
+
 janela = janela_inicial()
 janela.mainloop()
+
