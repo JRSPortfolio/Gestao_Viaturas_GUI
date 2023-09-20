@@ -20,9 +20,9 @@ class janela_inicial(tk.Tk):
         button_font = ("Cascadia Mono", 12, "bold")
         
         self.title_label = tk.Label(self, text = "Catálogo de Automóveis", font = title_font)
-        self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 50, sticky = "ew")
+        self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 30, sticky = "ew")
         
-        self.buttons(button_font)
+        self.buttons_layout(button_font)
         self.menu()
           
     def menu(self):
@@ -41,39 +41,6 @@ class janela_inicial(tk.Tk):
         
         self.config(menu = self.menu_bar)
         
-    # def janela_tipo_letra(self):
-    #     self.lista_fontes = tk.Toplevel(self)
-    #     self.lista_fontes.title("Alterar Tipo de Letra")
-    #     self.lista_fontes.geometry("700x500")
-        
-    #     self.lista_fontes_canvas = tk.Canvas(self.lista_fontes)
-    #     self.lista_fontes_canvas.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
-        
-    #     self.fonts_frame = ttk.Frame(self.lista_fontes_canvas)
-    #     self.lista_fontes_canvas.create_window((0, 0), window = self.fonts_frame, anchor=tk.NW)
-    #     self.font_escolha_frame = ttk.Frame(self.lista_fontes)
-    #     self.font_escolha_frame.pack(side=tk.BOTTOM, pady=10)
-        
-    #     scrollbar = Scrollbar(self.lista_fontes, orient=tk.VERTICAL, command=self.lista_fontes_canvas.yview)
-    #     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    #     self.lista_fontes_canvas.configure(yscrollcommand=scrollbar.set)
-        
-    #     fonte_selecionada = tk.StringVar()
-    #     self.get_font_list()
-        
-    #     for i in self.font_list:
-    #         ttk.Radiobutton(self.fonts_frame, text=i, variable = fonte_selecionada, value=i).pack(anchor=tk.W)
-
-            
-    #     def seleccao():
-    #         escolha = fonte_selecionada.get()
-    #         if escolha:
-    #             self.change_font(escolha)
-                
-    #     ttk.Button(self.lista_fontes_canvas, text="Escolher", command = seleccao).pack(side=tk.BOTTOM, pady=10)
-    #     self.fonts_frame.update_idletasks()
-    #     self.lista_fontes_canvas.config(scrollregion=self.lista_fontes_canvas.bbox("all"))
-    
     def janela_tipo_letra(self):
         self.lista_fontes = tk.Toplevel(self)
         self.lista_fontes.title("Alterar Tipo de Letra")
@@ -120,18 +87,18 @@ class janela_inicial(tk.Tk):
             self.lista_fontes_canvas.yview_scroll(-1 * (event.delta // 120), "units")
         self.lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
                     
-    def buttons(self, button_font): 
-        self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 15, height = 3,
+    def buttons_layout(self, button_font): 
+        self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 12, height = 2 ,
                                     font = button_font, command=lambda: print("click"))
-        self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 15, height = 3,
+        self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 12, height = 2,
                                 font = button_font, command=lambda: print("click"))
-        self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 15, height = 3,
+        self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 12, height = 2,
                                 font = button_font, command=lambda: print("click"))
-        self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 15, height = 3,
+        self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 12, height = 2,
                                 font = button_font, command=lambda: print("click"))
-        self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 15, height = 3,
+        self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 12, height = 2,
                                     font = button_font, command=lambda: print("click"))
-        self.recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 15, height = 3,
+        self.recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 12, height = 2,
                                         font = button_font, command=lambda: print("click"))
         
         self.listar_viaturas.grid(row=1, column=0, padx = 40, pady = 10, sticky = "ew")
