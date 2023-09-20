@@ -6,7 +6,7 @@ class janela_inicial(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Catalogo de Automóveis")
-        self.geometry("600x800")
+        self.geometry("600x800+100+50")
         
         self.rowconfigure(0, weight = 0)
         self.rowconfigure(1, weight = 0)
@@ -77,7 +77,7 @@ class janela_inicial(tk.Tk):
     def janela_tipo_letra(self):
         self.lista_fontes = tk.Toplevel(self)
         self.lista_fontes.title("Alterar Tipo de Letra")
-        self.lista_fontes.geometry("300x500")
+        self.lista_fontes.geometry("300x500+750+50")
         
         self.lista_fontes_canvas = tk.Canvas(self.lista_fontes)
         self.lista_fontes_canvas.grid(row=0, column=0, sticky="nsew")
@@ -98,6 +98,7 @@ class janela_inicial(tk.Tk):
             escolha = fonte_selecionada.get()
             if escolha:
                 self.change_font(escolha)
+                self.lista_fontes.destroy()
                 
         y = 0
         
