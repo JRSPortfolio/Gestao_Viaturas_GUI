@@ -28,6 +28,7 @@ class janela_inicial(tk.Tk):
         
         self.buttons_layout(button_font)
         self.result_layout(result_titles_font)
+        self.limpar_result_layout(result_titles_font)
         self.menu()
           
     def menu(self):
@@ -115,7 +116,7 @@ class janela_inicial(tk.Tk):
         
     def result_layout(self, font):
         self.result_layout_canvas = tk.Canvas(self)
-        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = 80, sticky = "ew")
+        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10), sticky = "ew")
         
         self.marca_titulo = tk.Label(self.result_layout_canvas, text = "Marca", font = font)
         self.modelo_titulo = tk.Label(self.result_layout_canvas, text = "Modelo", font = font)
@@ -127,22 +128,18 @@ class janela_inicial(tk.Tk):
         self.data_titulo.grid(row = 0, column = 2, padx = 40, pady = 0, sticky = "ew")
         self.matricula_titulo.grid(row = 0, column = 3, padx = 40, pady = 0, sticky = "ew")
         
-        self.result_layout_canvas.grid_columnconfigure(0, weight=1)
-        self.result_layout_canvas.grid_columnconfigure(1, weight=1)
-        self.result_layout_canvas.grid_columnconfigure(2, weight=1)
-        self.result_layout_canvas.grid_columnconfigure(3, weight=1)
+        for col in range(4):
+            self.result_layout_canvas.grid_columnconfigure(col, weight=1)
         
-        def limpar_result_layout():
-            self.limpar_canvas = tk.Canvas(self)
-            self.limpar_canvas.grid(row = 5, column = 0, columnspan = 2, padx = 200, pady = 20, sticky = "ew")
-            
-            self.limpar_res_lay = tk.Button(self, text="Limpar", width = 12, height = 2,
-                                            font = font, command = self.result_layout)
-            self.limpar_res_lay.grid(row = 0, column = 0, padx =  40, pady = 0, sticky = "ew")
-            self.result_layout_canvas.grid_columnconfigure(0, weight=1)
+    def limpar_result_layout(self, font):
+        self.limpar_canvas = tk.Canvas(self)
+        self.limpar_canvas.grid(row = 5, column = 0, columnspan = 2, padx = 200, pady = 10, sticky = "ew")
         
-        limpar_result_layout()
-        
+        self.limpar_res_lay = tk.Button(self.limpar_canvas, text="Limpar", width = 8, height = 1,
+                                        font = font, command=lambda: print("clean"))
+        self.limpar_res_lay.grid(row = 0, column = 0, padx =  40, pady = 0)
+        self.limpar_canvas.grid_columnconfigure(0, weight=1)
+          
     def action_listar_viaturas(self):
         x = 1      
         for car in self.carros:
