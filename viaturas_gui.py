@@ -95,7 +95,7 @@ class janela_inicial(tk.Tk):
         self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
                                          font = font, command = self.action_listar_viaturas)
         self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
-                                      font = font, command=lambda: print("click"))
+                                      font = font, command = self.janela_pesquisa)
         self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
                                      font = font, command=lambda: print("click"))
         self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
@@ -183,6 +183,32 @@ class janela_inicial(tk.Tk):
             self.result_data_canvas.yview_scroll(-1 * (event.delta // 120), "units") 
             
         self.result_data_canvas.bind_all("<MouseWheel>", on_mousewheel)
+        
+    def janela_pesquisa(self):
+        self.pesquisa_menu = tk.Toplevel(self)
+        self.pesquisa_menu.title("Pesquisar Veículo")
+        self.pesquisa_menu.geometry("400x300+250+50")
+        
+        options = ['Matricula', 'Marca', 'Modelo', 'Data']
+                
+        self.lbox_pes_menu = ttk.Combobox(self.pesquisa_menu, values = options, font = ("Cascadia Mono", 14))
+        self.lbox_pes_menu.set(options[0])
+        self.lbox_pes_menu.grid(row = 0, column = 0, padx = 20, pady = 30)
+        
+        
+    # def janela_pesquisa(self):
+    #     self.pesquisa_menu = tk.Toplevel(self)
+    #     self.pesquisa_menu.title("Pesquisar Veículo")
+    #     self.pesquisa_menu.geometry("400x300+250+50")
+        
+    #     self.menu_pesquisa_canvas = tk.Canvas(self.pesquisa_menu)
+    #     self.menu_pesquisa_canvas.grid(row = 0, column = 0, sticky = "nsew")
+        
+    #     options = ['Matricula', 'Marca', 'Modelo', 'Data']
+                
+    #     self.lbox_pes_menu = tk.OptionMenu(self.menu_pesquisa_canvas, *options)
+    #     self.lbox_pes_menu.grid(row = 0, column = 0, padx = 20, pady = 30)
+        
                                                                       
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
