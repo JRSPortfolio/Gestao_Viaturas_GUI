@@ -203,12 +203,31 @@ class janela_inicial(tk.Tk):
         self.pesquisa_menu.grid_columnconfigure(1, weight = 1)
         
     def pesquisa_veiculos(self):
+        procura, tipo = self.val_pes_options()
+        resultado = self.carros.pesquisa(procura, tipo)
+        if resultado:
+            self.clean_list()
+            self.listar_resultados(resultado)
+            self.pesquisa_menu.destroy()
+        else:
+            self.show_error_message('Não foram encontrados veiculos')
+        
+    def val_pes_options(self):
         tipo = self.cbox_pes_menu.get().lower()
         procura = self.pes_menu_entry.get()
-        resultado = self.carros.pesquisa(procura, tipo)
-        self.clean_list()
-        self.listar_resultados(resultado)
-        self.pesquisa_menu.destroy()
+        match tipo:
+            case 'matricula':
+                erro = val_mat(procura)
+            case 'marca':
+                erro = val_marca(procura)
+            case 'modelo':
+                erro = val_modelo(procura)
+            case 'data':
+                erro = val_data(procura)
+        if erro:
+            self.show_error_message(erro)
+        else:
+            return procura, tipo
                                                                               
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
@@ -229,17 +248,19 @@ class janela_inicial(tk.Tk):
                 self.font_list.append(font_name[:-11])   
         winreg.CloseKey(font_key)
         
-    def show__error_message(self, erro: str):
+    def show_error_message(self, erro: str):
         self.error_window = tk.Toplevel(self)
         self.error_window.title("Error de Introdução de Dados")
 
-        error_label = tk.Label(self.error_window, text = erro)
+        error_label = tk.Label(self.error_window, text = erro, font = ("Cascadia Mono", 12, "bold"))
         error_label.pack(pady=10)
+        
+        def fechar_button():
+            self.error_window.destroy()
+            self.pes_menu_entry.delete(0, tk.END)
 
-        close_button = tk.Button(self.error_window, text="Fechar", command = self.error_window.destroy)
+        close_button = tk.Button(self.error_window, text="Fechar", command = fechar_button)
         close_button.pack(pady=10)
-
-
 
 janela = janela_inicial()
 janela.mainloop()
