@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import font, ttk, Scrollbar
-from tkinter.scrolledtext import ScrolledText
 import winreg
 from op_ficheiros import *
+from viaturas_validacoes import *
 
 class janela_inicial(tk.Tk):
     def __init__(self):
@@ -32,16 +32,12 @@ class janela_inicial(tk.Tk):
     def menu(self):
         self.menu_bar = tk.Menu(self)
         self.options = tk.Menu(self.menu_bar, tearoff = 0)
-        # self.tipo_letra = tk.Menu(self.menu_bar, tearoff = 0)
         
         self.options.add_command(label = "Alterar Tipo de Letra", command = self.janela_tipo_letra)
         self.options.add_command(label = "Sair", command = self.quit)
-        # for font in fonts:
-        #     self.tipo_letra.add_command(label = font, command = lambda f = font: self.change_font(f))
             
         self.menu
         self.menu_bar.add_cascade(label = "Opções", menu = self.options)
-        # self.menu_bar.add_cascade(label = "Alterar Tipo de Letra", menu = self.tipo_letra)
         
         self.config(menu = self.menu_bar)
         
@@ -187,29 +183,33 @@ class janela_inicial(tk.Tk):
     def janela_pesquisa(self):
         self.pesquisa_menu = tk.Toplevel(self)
         self.pesquisa_menu.title("Pesquisar Veículo")
-        self.pesquisa_menu.geometry("400x300+250+50")
+        self.pesquisa_menu.geometry("450x150+250+50")
         
         options = ['Matricula', 'Marca', 'Modelo', 'Data']
+        font = ("Cascadia Mono", 12)
                 
-        self.lbox_pes_menu = ttk.Combobox(self.pesquisa_menu, values = options, font = ("Cascadia Mono", 14))
-        self.lbox_pes_menu.set(options[0])
-        self.lbox_pes_menu.grid(row = 0, column = 0, padx = 20, pady = 30)
+        self.cbox_pes_menu = ttk.Combobox(self.pesquisa_menu, values = options, font = font)
+        self.cbox_pes_menu.set(options[0])
+        self.cbox_pes_menu.grid(row = 0, column = 0, padx = 20, pady = 30)
         
+        self.pes_menu_entry = tk.Entry(self.pesquisa_menu, font = font)
+        self.pes_menu_entry.grid(row = 0, column = 1, padx = (0,20), pady = 30)
         
-    # def janela_pesquisa(self):
-    #     self.pesquisa_menu = tk.Toplevel(self)
-    #     self.pesquisa_menu.title("Pesquisar Veículo")
-    #     self.pesquisa_menu.geometry("400x300+250+50")
+        self.pes_menu_button = tk.Button(self.pesquisa_menu, text="Pesquisar", width = 12, height = 1,
+                                        font = font, command = self.pesquisa_veiculos)
+        self.pes_menu_button.grid(row = 1, column = 0,columnspan = 2 , padx = 20, pady = 10)
         
-    #     self.menu_pesquisa_canvas = tk.Canvas(self.pesquisa_menu)
-    #     self.menu_pesquisa_canvas.grid(row = 0, column = 0, sticky = "nsew")
+        self.pesquisa_menu.grid_columnconfigure(0, weight = 1)
+        self.pesquisa_menu.grid_columnconfigure(1, weight = 1)
         
-    #     options = ['Matricula', 'Marca', 'Modelo', 'Data']
-                
-    #     self.lbox_pes_menu = tk.OptionMenu(self.menu_pesquisa_canvas, *options)
-    #     self.lbox_pes_menu.grid(row = 0, column = 0, padx = 20, pady = 30)
-        
-                                                                      
+    def pesquisa_veiculos(self):
+        tipo = self.cbox_pes_menu.get().lower()
+        procura = self.pes_menu_entry.get()
+        resultado = self.carros.pesquisa(procura, tipo)
+        self.clean_list()
+        self.listar_resultados(resultado)
+        self.pesquisa_menu.destroy()
+                                                                              
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
         self.listar_viaturas.config(font = (font_type, 12, "bold"))
@@ -228,6 +228,16 @@ class janela_inicial(tk.Tk):
             if font_name[:-11] in font.families():
                 self.font_list.append(font_name[:-11])   
         winreg.CloseKey(font_key)
+        
+    def show__error_message(self, erro: str):
+        self.error_window = tk.Toplevel(self)
+        self.error_window.title("Error de Introdução de Dados")
+
+        error_label = tk.Label(self.error_window, text = erro)
+        error_label.pack(pady=10)
+
+        close_button = tk.Button(self.error_window, text="Fechar", command = self.error_window.destroy)
+        close_button.pack(pady=10)
 
 
 
