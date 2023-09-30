@@ -264,10 +264,7 @@ class janela_inicial(tk.Tk):
         def fechar_button():
             self.jan_add_veiculo.destroy()
             
-        def add_v_button():
-            ...
-            
-        close_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = font, height = 10, command = self.val_add_veiculo)
+        close_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = font, height = 10, command = self.adicionar_veiculo)
         close_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
 
         close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = font, width = 15,command = fechar_button)
@@ -287,35 +284,50 @@ class janela_inicial(tk.Tk):
         erro_modelo = val_modelo(modelo)
         erro_data = val_data(data)
         
+        erros = []
+        
         if erro_mat:
-            self.show_error_message(erro_mat)
+            erros.append(erro_mat)
             self.matricula_add_entry.delete(0, tk.END)
         if erro_marca:
-            self.show_error_message(erro_marca)
+            erros.append(erro_marca)
             self.marca_add_entry.delete(0, tk.END)
         if erro_modelo:
-            self.show_error_message(erro_modelo)
+            erros.append(erro_modelo)
             self.modelo_add_entry.delete(0, tk.END)
         if erro_data:
-            self.show_error_message(erro_data)
+            erros.append(erro_data)
             self.data_add_entry.delete(0, tk.END)
             
         if not erro_mat:
-            erro_mat_dup = val_mat_duplicada(matricula)
+            erro_mat_dup = val_mat_duplicada(self.carros, matricula)
             if erro_mat_dup:
-                self.show_error_message(erro_mat_dup)
+                erros.append(erro_mat_dup)
                 self.matricula_add_entry.delete(0, tk.END)
         
         if not erro_data:
             erro_data_mat = val_data_de_mat(matricula, data)
             if erro_data_mat:
-                self.show_error_message(erro_data_mat)
+                erros.append(erro_data_mat)
                 self.matricula_add_entry.delete(0, tk.END)
                 self.data_add_entry.delete(0, tk.END)
+                
+        return erros
         
-        
-        
-                                                                              
+    def adicionar_veiculo(self):
+        erros = self.val_add_veiculo()
+        if erros:
+            self.show_error_message(erros)
+        else:
+            matricula = self.matricula_add_entry.get().strip()
+            marca = self.marca_add_entry.get().strip()
+            modelo = self.modelo_add_entry.get().strip()
+            data = self.data_add_entry.get().strip()
+            car = Carro(matricula, marca, modelo, data)
+            self.carros.append(car)
+            self.veiculo_adicionado_message(matricula, marca, modelo, data)
+            self.jan_add_veiculo.destroy()
+                                                                            
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
         self.listar_viaturas.config(font = (font_type, 12, "bold"))
@@ -335,18 +347,39 @@ class janela_inicial(tk.Tk):
                 self.font_list.append(font_name[:-11])   
         winreg.CloseKey(font_key)
         
-    def show_error_message(self, erro: str):
-        self.error_window = tk.Toplevel(self)
-        self.error_window.title("Error de Introdução de Dados")
+    def show_error_message(self, erro: str | list):    
+            self.error_window = tk.Toplevel(self)
+            self.error_window.title("Error de Introdução de Dados")
 
-        error_label = tk.Label(self.error_window, text = erro, font = ("Cascadia Mono", 12, "bold"))
-        error_label.pack(padx = 20, pady = 10)
-        
-        def fechar_button():
-            self.error_window.destroy()
+            if isinstance(erro, str):
+                error_label = tk.Label(self.error_window, text = erro, font = ("Cascadia Mono", 12, "bold"))
+                error_label.pack(padx = 20, pady = 10)
+            
+            else:
+                for i in erro:
+                    error_label = tk.Label(self.error_window, text = i, font = ("Cascadia Mono", 12, "bold"))
+                    error_label.pack(padx = 20, pady = 10)
+                    
+            def fechar_button():
+                self.error_window.destroy()
 
-        close_button = tk.Button(self.error_window, text="Fechar", command = fechar_button)
-        close_button.pack(pady=10)
+            close_button = tk.Button(self.error_window, text="Fechar", command = fechar_button)
+            close_button.pack(pady=10)
+            
+    def veiculo_adicionado_message(self, matricula, marca, modelo, data):    
+            self.veiculo_add = tk.Toplevel(self)
+            self.veiculo_add.title("Inserção Correcta")
+
+            message = f"Veiculo adicionado com os seguintes dados: \nmarca: {marca}\nmodelo: {modelo}\nmatricula: {matricula}\ndata: {data}"        
+            
+            msg_label = tk.Label(self.veiculo_add, text = message, font = ("Cascadia Mono", 14, "bold"))
+            msg_label.pack(padx = 20, pady = 10)
+                    
+            def ok_button():
+                self.veiculo_add.destroy()
+
+            close_button = tk.Button(self.veiculo_add, text="OK", command = ok_button)
+            close_button.pack(pady=10)
 
 janela = janela_inicial()
 janela.mainloop()
