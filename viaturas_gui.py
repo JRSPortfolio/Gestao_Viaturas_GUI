@@ -93,7 +93,7 @@ class janela_inicial(tk.Tk):
         self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
                                       font = font, command = self.janela_pesquisa)
         self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
-                                     font = font, command=lambda: print("click"))
+                                     font = font, command = self.janela_add_veiculo)
         self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
                                      font = font, command=lambda: print("click"))
         self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
@@ -203,15 +203,19 @@ class janela_inicial(tk.Tk):
         self.pesquisa_menu.grid_columnconfigure(1, weight = 1)
         
     def pesquisa_veiculos(self):
-        procura, tipo = self.val_pes_options()
-        resultado = self.carros.pesquisa(procura, tipo)
-        if resultado:
-            self.clean_list()
-            self.listar_resultados(resultado)
-            self.pesquisa_menu.destroy()
-        else:
-            self.show_error_message('Não foram encontrados veiculos')
-        
+        try:
+            procura, tipo = self.val_pes_options()
+            resultado = self.carros.pesquisa(procura, tipo)
+            if resultado:
+                self.clean_list()
+                self.listar_resultados(resultado)
+                self.pesquisa_menu.destroy()
+            else:
+                self.show_error_message('Não foram encontrados veiculos')
+                self.pes_menu_entry.delete(0, tk.END)
+        except:
+            pass
+
     def val_pes_options(self):
         tipo = self.cbox_pes_menu.get().lower()
         procura = self.pes_menu_entry.get()
@@ -226,8 +230,91 @@ class janela_inicial(tk.Tk):
                 erro = val_data(procura)
         if erro:
             self.show_error_message(erro)
+            self.pes_menu_entry.delete(0, tk.END)
         else:
             return procura, tipo
+        
+    def janela_add_veiculo(self):
+        self.jan_add_veiculo = tk.Toplevel(self)
+        self.jan_add_veiculo.title("Adicionar Veículo")
+        self.jan_add_veiculo.geometry("470x350+250+50")
+        
+        font = ("Cascadia Mono", 12, "bold")
+        
+        self.marca_add_label = tk.Label(self.jan_add_veiculo, text = 'Marca', font = font)
+        self.modelo_add_label = tk.Label(self.jan_add_veiculo, text = 'Modelo', font = font)
+        self.matricula_add_label = tk.Label(self.jan_add_veiculo, text = 'Matricula', font = font)
+        self.data_add_label = tk.Label(self.jan_add_veiculo, text = 'Data', font = font)
+    
+        self.marca_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
+        self.modelo_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
+        self.matricula_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
+        self.data_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
+        
+        self.marca_add_label.grid(row = 0, column = 0, padx =  20, pady = (30, 5))
+        self.modelo_add_label.grid(row = 1, column = 0, padx = 20, pady = 5)
+        self.matricula_add_label.grid(row = 2, column = 0, padx = 20, pady = 5)
+        self.data_add_label.grid(row = 3, column = 0, padx = 20, pady = 5)
+        
+        self.marca_add_entry.grid(row = 0, column = 1, padx =  10, pady = (30, 5))
+        self.modelo_add_entry.grid(row = 1, column = 1, padx =  10, pady = 5)
+        self.matricula_add_entry.grid(row = 2, column = 1, padx =  10, pady = 5)
+        self.data_add_entry.grid(row = 3, column = 1, padx =  10, pady = 5)
+        
+        def fechar_button():
+            self.jan_add_veiculo.destroy()
+            
+        def add_v_button():
+            ...
+            
+        close_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = font, height = 10, command = self.val_add_veiculo)
+        close_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
+
+        close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = font, width = 15,command = fechar_button)
+        close_button.grid(row = 4, column = 1, columnspan = 2, pady=10)
+        
+        for i in range(4):
+            self.jan_add_veiculo.grid_columnconfigure(i, weight = 1)
+            
+    def val_add_veiculo(self):
+        matricula = self.matricula_add_entry.get().strip()
+        marca = self.marca_add_entry.get().strip()
+        modelo = self.modelo_add_entry.get().strip()
+        data = self.data_add_entry.get().strip()
+        
+        erro_mat = val_mat(matricula)
+        erro_marca = val_marca(marca)
+        erro_modelo = val_modelo(modelo)
+        erro_data = val_data(data)
+        
+        if erro_mat:
+            self.show_error_message(erro_mat)
+            self.matricula_add_entry.delete(0, tk.END)
+        if erro_marca:
+            self.show_error_message(erro_marca)
+            self.marca_add_entry.delete(0, tk.END)
+        if erro_modelo:
+            self.show_error_message(erro_modelo)
+            self.modelo_add_entry.delete(0, tk.END)
+        if erro_data:
+            self.show_error_message(erro_data)
+            self.data_add_entry.delete(0, tk.END)
+            
+        if not erro_mat:
+            erro_mat_dup = val_mat_duplicada(matricula)
+            if erro_mat_dup:
+                self.show_error_message(erro_mat_dup)
+                self.matricula_add_entry.delete(0, tk.END)
+        
+        if not erro_data:
+            erro_data_mat = val_data_de_mat(matricula, data)
+            if erro_data_mat:
+                self.show_error_message(erro_data_mat)
+                self.matricula_add_entry.delete(0, tk.END)
+                self.data_add_entry.delete(0, tk.END)
+        
+        
+        
                                                                               
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
@@ -253,11 +340,10 @@ class janela_inicial(tk.Tk):
         self.error_window.title("Error de Introdução de Dados")
 
         error_label = tk.Label(self.error_window, text = erro, font = ("Cascadia Mono", 12, "bold"))
-        error_label.pack(pady=10)
+        error_label.pack(padx = 20, pady = 10)
         
         def fechar_button():
             self.error_window.destroy()
-            self.pes_menu_entry.delete(0, tk.END)
 
         close_button = tk.Button(self.error_window, text="Fechar", command = fechar_button)
         close_button.pack(pady=10)
