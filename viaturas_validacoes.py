@@ -34,9 +34,9 @@ def val_data_de_mat(matricula: str, data: str):
     vmat2 = re.search(r"^\d\d-\d\d-[A-Z]{2}$", matricula)
     vmat3 = re.search(r"^\d\d-[A-Z]{2}-\d\d$", matricula)
     
-    if vmat1 and date.fromisoformat(data) > date.fromisoformat('1992-06-31'):
+    if vmat1 and date.fromisoformat(data) > date.fromisoformat('1992-06-30'):
         return f'Um veiculo com data {data} não pode ter uma matricula {matricula}'
-    if vmat2 and date.fromisoformat(data) > date.fromisoformat('2005-06-31'):
+    if vmat2 and date.fromisoformat(data) > date.fromisoformat('2005-06-30'):
         return f'Um veiculo com data {data} não pode ter uma matricula {matricula}'
     if vmat3 and date.fromisoformat(data) > date.fromisoformat('2020-03-01'):
         return f'Um veiculo com data {data} não pode ter uma matricula {matricula}'

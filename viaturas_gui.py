@@ -95,7 +95,7 @@ class janela_inicial(tk.Tk):
         self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_add_veiculo)
         self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
-                                     font = font, command=lambda: print("click"))
+                                     font = font, command = self.janela_rem_veiculo)
         self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
                                          font = font, command=lambda: print("click"))
         self.recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
@@ -267,8 +267,8 @@ class janela_inicial(tk.Tk):
         close_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = font, height = 10, command = self.adicionar_veiculo)
         close_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
 
-        close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = font, width = 15,command = fechar_button)
-        close_button.grid(row = 4, column = 1, columnspan = 2, pady=10)
+        close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = font, width = 15, command = fechar_button)
+        close_button.grid(row = 4, column = 0, columnspan = 3, pady=10)
         
         for i in range(4):
             self.jan_add_veiculo.grid_columnconfigure(i, weight = 1)
@@ -327,7 +327,63 @@ class janela_inicial(tk.Tk):
             self.carros.append(car)
             self.veiculo_adicionado_message(matricula, marca, modelo, data)
             self.jan_add_veiculo.destroy()
-                                                                            
+            
+    def janela_rem_veiculo(self):
+        self.jan_rem_veiculo = tk.Toplevel(self)
+        self.jan_rem_veiculo.title("Remover Veículo")
+        self.jan_rem_veiculo.geometry("470x350+250+50")
+        
+        font = ("Cascadia Mono", 12, "bold")
+        
+        self.matricula_rem_label = tk.Label(self.jan_rem_veiculo, text = 'Matricula', font = font)
+        self.matricula_rem_entry = tk.Entry(self.jan_rem_veiculo, font = font)
+        
+        self.matricula_rem_label.grid(row = 0, column = 0, padx = 20, pady = 5)
+        self.matricula_rem_entry.grid(row = 0, column = 1, padx =  10, pady = 5)
+        
+        def fechar_button():
+            self.jan_rem_veiculo.destroy()
+            
+        proc_rem_button = tk.Button(self.jan_rem_veiculo, text="Procurar Veiculo", width = 15 ,font = font, command = self.rem_veiculo_proc)
+        proc_rem_button.grid(row = 1, column = 0, columnspan = 2, padx = 10)
+
+        close_button = tk.Button(self.jan_rem_veiculo, text="Fechar", font = font, width = 15, command = fechar_button)
+        close_button.grid(row = 2, column = 0, columnspan = 2, pady=10)
+        
+        self.jan_rem_veiculo.grid_columnconfigure(0, weight = 1)
+        self.jan_rem_veiculo.grid_columnconfigure(1, weight = 1)
+        
+    def rem_veiculo_proc(self):
+        matricula = self.matricula_rem_entry.get().strip()
+        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '')
+        self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+        erro = val_mat(matricula)
+        font = ("Cascadia Mono", 12, "bold")
+        
+        def rem_button():
+            self.rem_msg_label.destroy()
+            message = "Veiculo Removido"
+            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
+            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+            self.carros.valores_carros.pop(matricula)
+            remover_button.destroy()
+            
+        if erro:
+            self.show_error_message(erro)
+        if matricula not in self.carros.valores_carros:
+            self.rem_msg_label.destroy()
+            message = f"Não foi encontrado veiculo com matricula {matricula}"
+            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
+            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+        else:
+            self.rem_msg_label.destroy()
+            carro = self.carros.valores_carros.get(matricula)
+            message = f"Veiculo a remover:\nMatricula: {carro.matricula}\nMarca: {carro.marca}\nModelo: {carro.modelo}\nData: {carro.data}"
+            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
+            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+            remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = font, width = 15, command = rem_button)
+            remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
+                                                                                    
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
         self.listar_viaturas.config(font = (font_type, 12, "bold"))
@@ -363,7 +419,7 @@ class janela_inicial(tk.Tk):
             def fechar_button():
                 self.error_window.destroy()
 
-            close_button = tk.Button(self.error_window, text="Fechar", command = fechar_button)
+            close_button = tk.Button(self.error_window, text="Fechar", font = ("Cascadia Mono", 12, "bold"),command = fechar_button)
             close_button.pack(pady=10)
             
     def veiculo_adicionado_message(self, matricula, marca, modelo, data):    
@@ -372,13 +428,13 @@ class janela_inicial(tk.Tk):
 
             message = f"Veiculo adicionado com os seguintes dados: \nmarca: {marca}\nmodelo: {modelo}\nmatricula: {matricula}\ndata: {data}"        
             
-            msg_label = tk.Label(self.veiculo_add, text = message, font = ("Cascadia Mono", 14, "bold"))
+            msg_label = tk.Label(self.veiculo_add, text = message, font = ("Cascadia Mono", 12, "bold"))
             msg_label.pack(padx = 20, pady = 10)
                     
             def ok_button():
                 self.veiculo_add.destroy()
 
-            close_button = tk.Button(self.veiculo_add, text="OK", command = ok_button)
+            close_button = tk.Button(self.veiculo_add, text="OK", font = ("Cascadia Mono", 14, "bold"), width = 12, command = ok_button)
             close_button.pack(pady=10)
 
 janela = janela_inicial()
