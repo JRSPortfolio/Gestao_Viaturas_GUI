@@ -94,7 +94,7 @@ class janela_inicial(tk.Tk):
                                       font = font, command = self.janela_pesquisa)
         add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_add_veiculo)
-        rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
+        self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_rem_veiculo)
         gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
                                          font = font, command=lambda: print("click"))
@@ -104,7 +104,7 @@ class janela_inicial(tk.Tk):
         listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
         pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
         add_viatura.grid(row = 2, column = 0, padx = 40, pady = 10)
-        rem_viatura.grid(row = 2, column = 1, padx = 40, pady = 10)
+        self.rem_viatura.grid(row = 2, column = 1, padx = 40, pady = 10)
         gravar_catalogo.grid(row = 3, column = 0, padx = 40, pady = 10)
         recarregar_catalogo.grid(row = 3, column = 1, padx = 40, pady = 10)
         
@@ -137,6 +137,14 @@ class janela_inicial(tk.Tk):
     def action_listar_viaturas(self):
         self.clean_list()
         self.listar_resultados(self.carros)
+        
+    def limpar_sel(self, event):
+        widget = event.widget.winfo_containing(event.x_root, event.y_root)
+        try:
+            if widget != self.treeview_lista and widget != self.rem_viatura:
+                self.treeview_lista.selection_remove(self.treeview_lista.selection())
+        except:
+            pass
                   
     def listar_resultados(self, carros: CatalogoCarros):
         cols = ("marca", "modelo", "data", "matricula")
@@ -168,7 +176,9 @@ class janela_inicial(tk.Tk):
             scrollbar.grid(row = 0, column = 1, sticky = 'ns')
         else:
             self.treeview_lista.config(height = i)
-            
+
+        self.bind("<Button-1>", self.limpar_sel)
+        
     def janela_pesquisa(self):
         self.pesquisa_menu = tk.Toplevel(self)
         self.pesquisa_menu.title("Pesquisar Veículo")
@@ -316,6 +326,7 @@ class janela_inicial(tk.Tk):
             self.carros.append(car)
             self.veiculo_adicionado_message(matricula, marca, modelo, data)
             self.jan_add_veiculo.destroy()
+            self.listar_resultados(self.carros)
             
     def janela_rem_veiculo(self):
         self.jan_rem_veiculo = tk.Toplevel(self)
@@ -330,6 +341,14 @@ class janela_inicial(tk.Tk):
         self.matricula_rem_label.grid(row = 0, column = 0, padx = 20, pady = 5)
         self.matricula_rem_entry.grid(row = 0, column = 1, padx =  10, pady = 5)
         
+        try:
+            sel_values = self.treeview_lista.item(self.treeview_lista.selection(), "values")
+            matricula = sel_values[3]
+            self.matricula_rem_entry.insert(0, matricula)
+            self.rem_veiculo_proc(matricula = matricula)
+        except:
+            pass
+        
         def fechar_button():
             self.jan_rem_veiculo.destroy()
             
@@ -342,7 +361,7 @@ class janela_inicial(tk.Tk):
         self.jan_rem_veiculo.grid_columnconfigure(0, weight = 1)
         self.jan_rem_veiculo.grid_columnconfigure(1, weight = 1)
         
-    def rem_veiculo_proc(self):
+    def rem_veiculo_proc(self, **kwargs):
         matricula = self.matricula_rem_entry.get().strip()
         erro = val_mat(matricula)
         font = ("Cascadia Mono", 12, "bold")
@@ -354,6 +373,7 @@ class janela_inicial(tk.Tk):
             self.carros.valores_carros.pop(matricula)
             remover_button.destroy()
             self.matricula_rem_entry.delete(0, tk.END)
+            self.listar_resultados(self.carros)
             
         if erro:
             self.show_error_message(erro)
