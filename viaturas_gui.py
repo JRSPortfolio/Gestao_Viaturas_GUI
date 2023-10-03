@@ -25,10 +25,10 @@ class janela_inicial(tk.Tk):
         self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 30, sticky = "ew")
         
         self.buttons_layout(button_font)
-        self.result_layout(self.result_titles_font)
+        self.result_layout()
         self.limpar_result_layout(self.result_titles_font)
         self.menu()
-          
+       
     def menu(self):
         self.menu_bar = tk.Menu(self)
         self.options = tk.Menu(self.menu_bar, tearoff = 0)
@@ -88,39 +88,29 @@ class janela_inicial(tk.Tk):
         self.lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
                     
     def buttons_layout(self, font): 
-        self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
+        listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
                                          font = font, command = self.action_listar_viaturas)
-        self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
+        pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
                                       font = font, command = self.janela_pesquisa)
-        self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
+        add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_add_veiculo)
-        self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
+        rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_rem_veiculo)
-        self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
+        gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
                                          font = font, command=lambda: print("click"))
-        self.recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
+        recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
                                              font = font, command=lambda: print("click"))
         
-        self.listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
-        self.pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
-        self.add_viatura.grid(row = 2, column = 0, padx = 40, pady = 10)
-        self.rem_viatura.grid(row = 2, column = 1, padx = 40, pady = 10)
-        self.gravar_catalogo.grid(row = 3, column = 0, padx = 40, pady = 10)
-        self.recarregar_catalogo.grid(row = 3, column = 1, padx = 40, pady = 10)
+        listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
+        pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
+        add_viatura.grid(row = 2, column = 0, padx = 40, pady = 10)
+        rem_viatura.grid(row = 2, column = 1, padx = 40, pady = 10)
+        gravar_catalogo.grid(row = 3, column = 0, padx = 40, pady = 10)
+        recarregar_catalogo.grid(row = 3, column = 1, padx = 40, pady = 10)
         
-    def result_layout(self, font):
+    def result_layout(self):
         self.result_layout_canvas = tk.Canvas(self)
         self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10))
-        
-        self.marca_titulo = tk.Label(self.result_layout_canvas, text = "Marca", font = font)
-        self.modelo_titulo = tk.Label(self.result_layout_canvas, text = "Modelo", font = font)
-        self.data_titulo = tk.Label(self.result_layout_canvas, text = "Data", font = font)
-        self.matricula_titulo = tk.Label(self.result_layout_canvas, text = "Matricula", font = font)
-        
-        self.marca_titulo.grid(row = 0, column = 0, padx =  40, pady = 0)
-        self.modelo_titulo.grid(row = 0, column = 1, padx = 40, pady = 0)
-        self.data_titulo.grid(row = 0, column = 2, padx = 40, pady = 0)
-        self.matricula_titulo.grid(row = 0, column = 3, padx = 40, pady = 0)
                                             
     def limpar_result_layout(self, font):
         self.limpar_canvas = tk.Canvas(self)
@@ -128,7 +118,7 @@ class janela_inicial(tk.Tk):
                 
         self.limpar_res_lay = tk.Button(self.limpar_canvas, text="Limpar", width = 8, height = 1,
                                         font = font, command = self.clean_list)
-        self.limpar_res_lay.grid(row = 0, column = 0, padx =  40, pady = 0)
+        self.limpar_res_lay.grid(row = 0, column = 0, padx = 40, pady = 0)
         self.limpar_canvas.grid_columnconfigure(0, weight=1)
         
     def clean_list(self):
@@ -137,49 +127,48 @@ class janela_inicial(tk.Tk):
                 label.destroy()
         self.detail_labels.clear
         try:
-            self.list_scrollbar.destroy()
-            self.result_data_canvas.destroy()
+            # self.list_scrollbar.destroy()
+            self.treeview_lista.destroy()
+            self.result_layout_canvas.destroy()
+            self.result_layout()
         except:
             pass
 
     def action_listar_viaturas(self):
         self.clean_list()
         self.listar_resultados(self.carros)
-          
-    def listar_resultados(self, carros: CatalogoCarros):        
-        self.result_data_canvas = tk.Canvas(self.result_layout_canvas)
-        self.result_data_canvas.grid(row = 1, column = 0, columnspan = 4, sticky = 'ew')
-        self.result_layout_frame = tk.Frame(self.result_data_canvas)
-        # self.result_layout_frame = ScrolledText(self.result_data_canvas)
-        self.result_data_canvas.create_window((0, 0), window=self.result_layout_frame, anchor='nw')
-         
-        self.detail_labels.clear
-        x = 0
-        for car in carros:
-            label_marca = tk.Label(self.result_layout_frame, text = f"{car.marca}")
-            label_modelo = tk.Label(self.result_layout_frame, text = f"{car.modelo}")
-            label_data = tk.Label(self.result_layout_frame, text = f"{car.data}")
-            label_matricula = tk.Label(self.result_layout_frame, text = f"{car.matricula}")
-            
-            label_marca.grid(row = x, column = 0, padx =  40, pady = 0)
-            label_modelo.grid(row = x, column = 1, padx =  40, pady = 0)
-            label_data.grid(row = x, column = 2, padx =  40, pady = 0)
-            label_matricula.grid(row = x, column = 3, padx =  40, pady = 0)
-            
-            self.detail_labels.append((label_marca, label_modelo, label_data, label_matricula))
-            x += 1
-                        
-        self.list_scrollbar = Scrollbar(self, orient = tk.VERTICAL, command = self.result_data_canvas.yview)
-        self.list_scrollbar.grid(row = 4, column = 2, pady = (110, 0), sticky="ns")
-        self.result_data_canvas.configure(yscrollcommand = self.list_scrollbar.set)
-        self.result_data_canvas.update_idletasks()
-        self.result_data_canvas.config(scrollregion=self.result_data_canvas.bbox("all"))
-                                                    
-        def on_mousewheel(event):
-            self.result_data_canvas.yview_scroll(-1 * (event.delta // 120), "units") 
-            
-        self.result_data_canvas.bind_all("<MouseWheel>", on_mousewheel)
+                  
+    def listar_resultados(self, carros: CatalogoCarros):
+        cols = ("marca", "modelo", "data", "matricula")
         
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font = ("Cascadia Mono", 12, "bold"))
+        style.configure("Treeview", font=("Cascadia Mono", 10))
+        
+        self.treeview_lista = ttk.Treeview(self.result_layout_canvas, columns = cols, show = 'headings', style = "Treeview")
+        self.treeview_lista.grid(row = 0, column = 0, sticky = 'ew')
+        
+        for col in cols:
+            self.treeview_lista.column(col, width = 130, anchor = tk.CENTER)
+        
+        self.treeview_lista.heading("marca", text = "Marca", anchor = tk.CENTER)
+        self.treeview_lista.heading("modelo", text = "Modelo", anchor = tk.CENTER)
+        self.treeview_lista.heading("data", text = "Data", anchor = tk.CENTER)
+        self.treeview_lista.heading("matricula", text = "Matricula", anchor = tk.CENTER)
+        
+        i = 1
+        for car in carros:
+            self.treeview_lista.insert('', tk.END, values = (car.marca, car.modelo, car.data, car.matricula))
+            i += 1
+        
+        if i > 12:
+            self.treeview_lista.config(height = 12)
+            scrollbar = ttk.Scrollbar(self.result_layout_canvas, orient=tk.VERTICAL, command = self.treeview_lista.yview)
+            self.treeview_lista.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row = 0, column = 1, sticky = 'ns')
+        else:
+            self.treeview_lista.config(height = i)
+            
     def janela_pesquisa(self):
         self.pesquisa_menu = tk.Toplevel(self)
         self.pesquisa_menu.title("Pesquisar Veículo")
@@ -331,7 +320,7 @@ class janela_inicial(tk.Tk):
     def janela_rem_veiculo(self):
         self.jan_rem_veiculo = tk.Toplevel(self)
         self.jan_rem_veiculo.title("Remover Veículo")
-        self.jan_rem_veiculo.geometry("470x350+250+50")
+        self.jan_rem_veiculo.geometry("470x400+250+50")
         
         font = ("Cascadia Mono", 12, "bold")
         
@@ -355,32 +344,27 @@ class janela_inicial(tk.Tk):
         
     def rem_veiculo_proc(self):
         matricula = self.matricula_rem_entry.get().strip()
-        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '')
-        self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
         erro = val_mat(matricula)
         font = ("Cascadia Mono", 12, "bold")
+        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '', font = font, width = 200)
+        self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
         
         def rem_button():
-            self.rem_msg_label.destroy()
-            message = "Veiculo Removido"
-            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
-            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+            self.rem_msg_label.config(text = "Veiculo Removido", width = 150)
             self.carros.valores_carros.pop(matricula)
             remover_button.destroy()
+            self.matricula_rem_entry.delete(0, tk.END)
             
         if erro:
             self.show_error_message(erro)
-        if matricula not in self.carros.valores_carros:
-            self.rem_msg_label.destroy()
-            message = f"Não foi encontrado veiculo com matricula {matricula}"
-            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
-            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+            
+        elif matricula not in self.carros.valores_carros:
+            self.rem_msg_label.config(text = f"Não foi encontrada matricula {matricula}", width = 200)
+
         else:
-            self.rem_msg_label.destroy()
             carro = self.carros.valores_carros.get(matricula)
             message = f"Veiculo a remover:\nMatricula: {carro.matricula}\nMarca: {carro.marca}\nModelo: {carro.modelo}\nData: {carro.data}"
-            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = message, font = font)
-            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+            self.rem_msg_label.config(text = message, width = 150)
             remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = font, width = 15, command = rem_button)
             remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
                                                                                     
