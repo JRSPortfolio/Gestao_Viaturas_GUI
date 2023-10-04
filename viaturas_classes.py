@@ -58,9 +58,30 @@ class CatalogoCarros:
         if encontrados:
             return encontrados
                     
-    def ordenar_carros(self):
+    def ordenar_carros_marca(self):
         carros_ordenados = CatalogoCarros()
         lista_ordenada = sorted(self._carros.values(), key=lambda Carro: (Carro.marca, Carro.modelo, Carro.data))
+        for i in range(len(lista_ordenada)):
+            carros_ordenados.append(lista_ordenada[i])
+        return carros_ordenados
+    
+    def ordenar_carros_modelo(self):
+        carros_ordenados = CatalogoCarros()
+        lista_ordenada = sorted(self._carros.values(), key=lambda Carro: (Carro.modelo, Carro.marca, Carro.data))
+        for i in range(len(lista_ordenada)):
+            carros_ordenados.append(lista_ordenada[i])
+        return carros_ordenados
+    
+    def ordenar_carros_data(self):
+        carros_ordenados = CatalogoCarros()
+        lista_ordenada = sorted(self._carros.values(), key=lambda Carro: (Carro.data, Carro.marca, Carro.modelo))
+        for i in range(len(lista_ordenada)):
+            carros_ordenados.append(lista_ordenada[i])
+        return carros_ordenados
+    
+    def ordenar_carros_matricula(self):
+        carros_ordenados = CatalogoCarros()
+        lista_ordenada = sorted(self._carros.values(), key=lambda Carro: (Carro.matricula, Carro.marca, Carro.modelo, Carro.data))
         for i in range(len(lista_ordenada)):
             carros_ordenados.append(lista_ordenada[i])
         return carros_ordenados

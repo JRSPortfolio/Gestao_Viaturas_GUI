@@ -8,6 +8,7 @@ class janela_inicial(tk.Tk):
     def __init__(self):
         super().__init__()
         self.carros = ler_carros(FILEPATH)
+        self.modific = CatalogoCarros
         
         self.title("Catalogo de Automóveis")
         self.geometry("600x800+100+50")
@@ -97,9 +98,9 @@ class janela_inicial(tk.Tk):
         self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
                                      font = font, command = self.janela_rem_veiculo)
         gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
-                                         font = font, command=lambda: print("click"))
+                                         font = font, command = self.gravar_catalogo)
         recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
-                                             font = font, command=lambda: print("click"))
+                                             font = font, command = self.recarregar_catalogo)
         
         listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
         pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
@@ -110,7 +111,7 @@ class janela_inicial(tk.Tk):
         
     def result_layout(self):
         self.result_layout_canvas = tk.Canvas(self)
-        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10))
+        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10), sticky = 'ew')
                                             
     def limpar_result_layout(self, font):
         self.limpar_canvas = tk.Canvas(self)
@@ -149,35 +150,62 @@ class janela_inicial(tk.Tk):
     def listar_resultados(self, carros: CatalogoCarros):
         cols = ("marca", "modelo", "data", "matricula")
         
+        self.carros_ordenados = carros
+        
         style = ttk.Style()
         style.configure("Treeview.Heading", font = ("Cascadia Mono", 12, "bold"))
         style.configure("Treeview", font=("Cascadia Mono", 10))
         
         self.treeview_lista = ttk.Treeview(self.result_layout_canvas, columns = cols, show = 'headings', style = "Treeview")
-        self.treeview_lista.grid(row = 0, column = 0, sticky = 'ew')
+        self.treeview_lista.grid(row = 0, column = 0, sticky = 'ew', padx = 30)
+        self.treeview_lista.tag_configure("cor", background = "whitesmoke")
         
         for col in cols:
             self.treeview_lista.column(col, width = 130, anchor = tk.CENTER)
         
-        self.treeview_lista.heading("marca", text = "Marca", anchor = tk.CENTER)
-        self.treeview_lista.heading("modelo", text = "Modelo", anchor = tk.CENTER)
-        self.treeview_lista.heading("data", text = "Data", anchor = tk.CENTER)
-        self.treeview_lista.heading("matricula", text = "Matricula", anchor = tk.CENTER)
+        self.treeview_lista.heading("marca", text = "Marca", anchor = tk.CENTER, command = lambda: ord_marca(carros))
+        self.treeview_lista.heading("modelo", text = "Modelo", anchor = tk.CENTER, command = lambda: ord_modelo(carros))
+        self.treeview_lista.heading("data", text = "Data", anchor = tk.CENTER, command = lambda: ord_data(carros))
+        self.treeview_lista.heading("matricula", text = "Matricula", anchor = tk.CENTER, command = lambda: ord_matricula(carros))
         
-        i = 1
-        for car in carros:
-            self.treeview_lista.insert('', tk.END, values = (car.marca, car.modelo, car.data, car.matricula))
-            i += 1
+        def listar():
+            if self.treeview_lista.get_children():
+                self.treeview_lista.delete(*self.treeview_lista.get_children())
+                
+            i = 1
+            for car in self.carros_ordenados:
+                self.treeview_lista.insert('', tk.END, values = (car.marca, car.modelo, car.data, car.matricula), tags = "cor")
+                i += 1
+            
+            if i > 12:
+                self.treeview_lista.config(height = 12)
+                scrollbar = ttk.Scrollbar(self.result_layout_canvas, orient=tk.VERTICAL, command = self.treeview_lista.yview)
+                self.treeview_lista.configure(yscroll=scrollbar.set)
+                scrollbar.grid(row = 0, column = 1, sticky = 'ns')
+            else:
+                self.treeview_lista.config(height = i)
+                
         
-        if i > 12:
-            self.treeview_lista.config(height = 12)
-            scrollbar = ttk.Scrollbar(self.result_layout_canvas, orient=tk.VERTICAL, command = self.treeview_lista.yview)
-            self.treeview_lista.configure(yscroll=scrollbar.set)
-            scrollbar.grid(row = 0, column = 1, sticky = 'ns')
-        else:
-            self.treeview_lista.config(height = i)
+        def ord_marca(carros):
+            self.carros_ordenados = carros.ordenar_carros_marca()
+            listar()
+
+        def ord_modelo(carros):
+            self.carros_ordenados = carros.ordenar_carros_modelo()
+            listar()
+            
+        def ord_data(carros):
+            self.carros_ordenados = carros.ordenar_carros_data()
+            listar()
+            
+        def ord_matricula(carros):
+            self.carros_ordenados = carros.ordenar_carros_matricula()
+            listar()
+
+        listar()
 
         self.bind("<Button-1>", self.limpar_sel)
+        self.result_layout_canvas.columnconfigure(0, weight = 1)
         
     def janela_pesquisa(self):
         self.pesquisa_menu = tk.Toplevel(self)
@@ -324,6 +352,7 @@ class janela_inicial(tk.Tk):
             data = self.data_add_entry.get().strip()
             car = Carro(matricula, marca, modelo, data)
             self.carros.append(car)
+            self.modific.append(car)
             self.veiculo_adicionado_message(matricula, marca, modelo, data)
             self.jan_add_veiculo.destroy()
             self.listar_resultados(self.carros)
@@ -370,6 +399,8 @@ class janela_inicial(tk.Tk):
         
         def rem_button():
             self.rem_msg_label.config(text = "Veiculo Removido", width = 150)
+            if carro not in self.modific:
+                self.modific.append(carro)
             self.carros.valores_carros.pop(matricula)
             remover_button.destroy()
             self.matricula_rem_entry.delete(0, tk.END)
@@ -387,7 +418,57 @@ class janela_inicial(tk.Tk):
             self.rem_msg_label.config(text = message, width = 150)
             remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = font, width = 15, command = rem_button)
             remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
-                                                                                    
+                        
+    def gravar_catalogo(self):
+        self.jan_gravar_cat = tk.Toplevel(self)
+        self.jan_gravar_cat.title("Gravar Catalogo")
+        self.jan_gravar_cat.geometry("400x200+250+50")
+        
+        font = ("Cascadia Mono", 12, "bold")
+        
+        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = "Gravar Catálogo em Ficheiro?", font = font, width = 40)
+        self.gravar_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
+        
+        def ok_action():            
+            self.gravar_cat_label.config(text = "Catalogo Gravado", width = 40)
+            self.gravar_ok_button.destroy()
+            self.gravar_no_button.grid(row = 1, column = 0, columnspan = 2 ,padx = 20, pady = 20)
+            gravar_carros(self.carros, FILEPATH)
+            
+        def no_action():
+            self.jan_gravar_cat.destroy()
+            
+        self.gravar_ok_button = tk.Button(self.jan_gravar_cat, text = "Gravar", font = font, width = 15, command = ok_action)
+        self.gravar_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
+        
+        self.gravar_no_button = tk.Button(self.jan_gravar_cat, text = "Fechar", font = font, width = 15, command = no_action)
+        self.gravar_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
+        
+    def recarregar_catalogo(self):
+        self.jan_recarregar_cat = tk.Toplevel(self)
+        self.jan_recarregar_cat.title("Recarregar Catalogo")
+        self.jan_recarregar_cat.geometry("400x200+250+50")
+        
+        font = ("Cascadia Mono", 12, "bold")
+                
+        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = "Recarregar Catálogo do Ficheiro?", font = font, width = 40)
+        self.rec_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
+        
+        def ok_action():            
+            self.rec_cat_label.config(text = "Catalogo Recarregado", width = 40)
+            self.rec_ok_button.destroy()
+            self.rec_no_button.grid(row = 1, column = 0, columnspan = 2 ,padx = 20, pady = 20)
+            self.carros = ler_carros(FILEPATH)
+            
+        def no_action():
+            self.jan_recarregar_cat.destroy()
+            
+        self.rec_ok_button = tk.Button(self.jan_recarregar_cat, text = "Recarregar", font = font, width = 15, command = ok_action)
+        self.rec_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
+        
+        self.rec_no_button = tk.Button(self.jan_recarregar_cat, text = "Fechar", font = font, width = 15, command = no_action)
+        self.rec_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
+                                                                                      
     def change_font(self, font_type: str):
         self.title_label.config(font = (font_type, 16, "bold"))
         self.listar_viaturas.config(font = (font_type, 12, "bold"))
