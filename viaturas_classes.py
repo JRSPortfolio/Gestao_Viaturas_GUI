@@ -85,12 +85,7 @@ class CatalogoCarros:
         for i in range(len(lista_ordenada)):
             carros_ordenados.append(lista_ordenada[i])
         return carros_ordenados
-                           
-    def __str__(self):
-        for car in self._carros.values():
-            print(f"     {car}")
-        return ''
-    
+                               
     def __len__(self):
         return len(self._carros)
     

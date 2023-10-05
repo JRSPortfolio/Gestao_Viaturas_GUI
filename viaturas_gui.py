@@ -7,8 +7,11 @@ from viaturas_validacoes import *
 class janela_inicial(tk.Tk):
     def __init__(self):
         super().__init__()
+        
         self.carros = ler_carros(FILEPATH)
-        self.modific = CatalogoCarros
+        self.adds_mod = CatalogoCarros()
+        self.rems_mod = CatalogoCarros()
+        self.detail_labels = []
         
         self.title("Catalogo de Automóveis")
         self.geometry("600x800+100+50")
@@ -16,111 +19,139 @@ class janela_inicial(tk.Tk):
         self.grid_columnconfigure(0, weight = 1)
         self.grid_columnconfigure(1, weight = 1)
         
-        # fonts = font.families()
-        title_font = ("Cascadia Mono", 16, "bold")
-        button_font = ("Cascadia Mono", 12, "bold")
-        self.result_titles_font = ("Cascadia Mono", 12, "bold")
-        self.detail_labels = []
+        self.comon_font = ("Cascadia Mono", 12, "bold")
         
-        self.title_label = tk.Label(self, text = "Catálogo de Automóveis", font = title_font)
-        self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 30, sticky = "ew")
-        
-        self.buttons_layout(button_font)
+        self.set_title()
+        self.buttons_layout()
         self.result_layout()
-        self.limpar_result_layout(self.result_titles_font)
+        self.limpar_result_layout()
         self.menu()
+        
+    def set_title(self):
+        font = ("Cascadia Mono", 16, "bold")
+        self.title_label = tk.Label(self, text = "Catálogo de Automóveis", font = font)
+        self.title_label.grid(row = 0, column = 0, columnspan = 2, padx = 40, pady = 30, sticky = "ew")
        
     def menu(self):
-        self.menu_bar = tk.Menu(self)
-        self.options = tk.Menu(self.menu_bar, tearoff = 0)
+        menu_bar = tk.Menu(self)
+        options = tk.Menu(menu_bar, tearoff = 0)
         
-        self.options.add_command(label = "Alterar Tipo de Letra", command = self.janela_tipo_letra)
-        self.options.add_command(label = "Sair", command = self.quit)
+        options.add_command(label = "Alterar Tipo de Letra", command = self.janela_tipo_letra)
+        options.add_command(label = "Sair", command = self.quit)
             
-        self.menu
-        self.menu_bar.add_cascade(label = "Opções", menu = self.options)
+        # menu
+        menu_bar.add_cascade(label = "Opções", menu = options)
         
-        self.config(menu = self.menu_bar)
+        self.config(menu = menu_bar)
         
     def janela_tipo_letra(self):
-        self.lista_fontes = tk.Toplevel(self)
-        self.lista_fontes.title("Alterar Tipo de Letra")
-        self.lista_fontes.geometry("300x500+750+50")
+        def get_font_list():
+            key_path = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
+            font_list = []
+            font_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
+            for i in range(winreg.QueryInfoKey(font_key)[1]):
+                font_name, n, _ = winreg.EnumValue(font_key, i)
+                if font_name[:-11] in font.families():
+                    font_list.append(font_name[:-11])   
+            winreg.CloseKey(font_key)
+            return font_list
         
-        self.lista_fontes_canvas = tk.Canvas(self.lista_fontes)
-        self.lista_fontes_canvas.grid(row=0, column=0, sticky="nsew")
-        
-        self.fonts_frame = ttk.Frame(self.lista_fontes_canvas)
-        self.lista_fontes_canvas.create_window((0, 0), window = self.fonts_frame, anchor=tk.NW)
-        self.font_escolha_frame = ttk.Frame(self.lista_fontes)
-        self.font_escolha_frame.grid(row=1, column=0, sticky="nsew")
-        
-        scrollbar = Scrollbar(self.lista_fontes, orient=tk.VERTICAL, command=self.lista_fontes_canvas.yview)
-        scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
-        self.lista_fontes_canvas.configure(yscrollcommand=scrollbar.set)
-        
-        fonte_selecionada = tk.StringVar()
-        self.get_font_list()
-        
+        def change_font(font_type: str):            
+            self.title_label.config(font = (font_type, 16, "bold"))
+            
+            self.listar_viaturas.config(font = (font_type, 12, "bold"))
+            self.pes_viaturas.config(font = (font_type, 12, "bold"))
+            self.add_viatura.config(font = (font_type, 12, "bold"))
+            self.rem_viatura.config(font = (font_type, 12, "bold"))
+            self.gravar_catalogo.config(font = (font_type, 12, "bold"))
+            self.recarregar_catalogo.config(font = (font_type, 12, "bold"))
+            
+        def on_mousewheel(event):
+            try:
+                lista_fontes_canvas.yview_scroll(-1 * (event.delta // 120), "units")
+            except:
+                pass
+            
         def seleccao():
-            escolha = fonte_selecionada.get()
-            if escolha:
-                self.change_font(escolha)
-                self.lista_fontes.destroy()
+            sel_indices = fonts_listbox.curselection()
+            if sel_indices:
+                index = sel_indices[0]
+                escolha = fonts_listbox.get(index)
+                change_font(escolha)
+                # lista_fontes.destroy()
+        
+        lista_fontes = tk.Toplevel(self)
+        lista_fontes.title("Alterar Tipo de Letra")
+        lista_fontes.geometry("300x500+750+50")
+        
+        lista_fontes_canvas = tk.Canvas(lista_fontes)
+        lista_fontes_canvas.grid(row = 0, column = 0, columnspan = 2, sticky="nsew")
+
+        fonts_listbox = tk.Listbox(lista_fontes_canvas)
+        fonts_listbox.grid(row = 0, column = 0, sticky = "nsew")
+        
+        font_list = get_font_list()
                 
         y = 0
-        
-        for i in self.font_list:
-            ttk.Radiobutton(self.fonts_frame, text=i, variable = fonte_selecionada, value=i).grid(row=y, column=0, sticky="nsew")
+        for i in font_list:
+            fonts_listbox.insert(y, i)
             y += 1
                 
-        ttk.Button(self.lista_fontes, text="Escolher", command = seleccao).grid(row = 1, column = 0, pady=20)
+        ttk.Button(lista_fontes, text = "Escolher", command = seleccao).grid(row = 1, column = 0, columnspan = 2, pady=20)
         
-        self.fonts_frame.update_idletasks()
-        self.lista_fontes_canvas.config(scrollregion=self.lista_fontes_canvas.bbox("all"))
+        scrollbar = Scrollbar(lista_fontes_canvas, orient=tk.VERTICAL, command = fonts_listbox.yview)
+        scrollbar.grid(row = 0, column = 1, sticky="ns")
+        fonts_listbox.configure(yscrollcommand = scrollbar.set)
         
-        self.lista_fontes.grid_rowconfigure(0, weight = 1)
-        self.lista_fontes.grid_rowconfigure(1, weight = 0)
-        self.lista_fontes.grid_columnconfigure(0, weight = 1)
-        self.lista_fontes.grid_columnconfigure(1, weight = 0)
+        lista_fontes.update_idletasks()
+        lista_fontes_canvas.config(scrollregion = lista_fontes_canvas.bbox("all"))
         
-        def on_mousewheel(event):
-            self.lista_fontes_canvas.yview_scroll(-1 * (event.delta // 120), "units")
-        self.lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
-                    
-    def buttons_layout(self, font): 
-        listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
-                                         font = font, command = self.action_listar_viaturas)
-        pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
-                                      font = font, command = self.janela_pesquisa)
-        add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
-                                     font = font, command = self.janela_add_veiculo)
+        lista_fontes.grid_columnconfigure(0, weight = 1)
+        lista_fontes.grid_columnconfigure(1, weight = 1)
+        lista_fontes_canvas.grid_columnconfigure(0, weight = 1)
+        lista_fontes_canvas.grid_columnconfigure(1, weight = 0)
+        fonts_listbox.grid_columnconfigure(0, weight = 1)
+        fonts_listbox.grid_columnconfigure(1, weight = 0)
+        
+        lista_fontes.grid_rowconfigure(0, weight = 1)
+        lista_fontes_canvas.grid_rowconfigure(0, weight = 1)
+        fonts_listbox.grid_rowconfigure(0, weight = 1)
+        
+        lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
+                                    
+    def buttons_layout(self):
+        self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
+                                         font = self.comon_font, command = self.action_listar_viaturas)
+        self.pes_viaturas = tk.Button(self, text="Pesquisar Viaturas", width = 30, height = 2,
+                                      font = self.comon_font, command = self.janela_pesquisa)
+        self.add_viatura = tk.Button(self, text="Adicionar Viatura",  width = 30, height = 2,
+                                     font = self.comon_font, command = self.janela_add_veiculo)
         self.rem_viatura = tk.Button(self, text="Remover Viatura",  width = 30, height = 2,
-                                     font = font, command = self.janela_rem_veiculo)
-        gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
-                                         font = font, command = self.gravar_catalogo)
-        recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
-                                             font = font, command = self.recarregar_catalogo)
+                                     font = self.comon_font, command = self.janela_rem_veiculo)
+        self.gravar_catalogo = tk.Button(self, text="Gravar Catalogo",  width = 30, height = 2,
+                                         font = self.comon_font, command = self.gravar_catalogo)
+        self.recarregar_catalogo = tk.Button(self, text="Recarregar Catalogo",  width = 30, height = 2,
+                                             font = self.comon_font, command = self.recarregar_catalogo)
         
-        listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
-        pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
-        add_viatura.grid(row = 2, column = 0, padx = 40, pady = 10)
+        self.listar_viaturas.grid(row = 1, column = 0, padx = 40, pady = 10)
+        self.pes_viaturas.grid(row = 1, column = 1, padx = 40, pady = 10)
+        self.add_viatura.grid(row = 2, column = 0, padx = 40, pady = 10)
         self.rem_viatura.grid(row = 2, column = 1, padx = 40, pady = 10)
-        gravar_catalogo.grid(row = 3, column = 0, padx = 40, pady = 10)
-        recarregar_catalogo.grid(row = 3, column = 1, padx = 40, pady = 10)
+        self.gravar_catalogo.grid(row = 3, column = 0, padx = 40, pady = 10)
+        self.recarregar_catalogo.grid(row = 3, column = 1, padx = 40, pady = 10)
         
     def result_layout(self):
         self.result_layout_canvas = tk.Canvas(self)
         self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10), sticky = 'ew')
                                             
-    def limpar_result_layout(self, font):
+    def limpar_result_layout(self):
         self.limpar_canvas = tk.Canvas(self)
         self.limpar_canvas.grid(row = 5, column = 0, columnspan = 2, padx = 200, pady = 10)
                 
         self.limpar_res_lay = tk.Button(self.limpar_canvas, text="Limpar", width = 8, height = 1,
-                                        font = font, command = self.clean_list)
+                                        font = self.comon_font, command = self.clean_list)
         self.limpar_res_lay.grid(row = 0, column = 0, padx = 40, pady = 0)
-        self.limpar_canvas.grid_columnconfigure(0, weight=1)
+        self.limpar_canvas.grid_columnconfigure(0, weight = 1)
         
     def clean_list(self):
         for group in self.detail_labels:
@@ -352,10 +383,14 @@ class janela_inicial(tk.Tk):
             data = self.data_add_entry.get().strip()
             car = Carro(matricula, marca, modelo, data)
             self.carros.append(car)
-            self.modific.append(car)
+            self.adds_mod.append(car)
             self.veiculo_adicionado_message(matricula, marca, modelo, data)
             self.jan_add_veiculo.destroy()
-            self.listar_resultados(self.carros)
+            try:
+                if self.treeview_lista.get_children():
+                    self.listar_resultados(self.carros_ordenados)
+            except:
+                pass
             
     def janela_rem_veiculo(self):
         self.jan_rem_veiculo = tk.Toplevel(self)
@@ -399,12 +434,18 @@ class janela_inicial(tk.Tk):
         
         def rem_button():
             self.rem_msg_label.config(text = "Veiculo Removido", width = 150)
-            if carro not in self.modific:
-                self.modific.append(carro)
+            if carro not in self.adds_mod:
+                self.rems_mod.append(carro)
+            else:
+                self.adds_mod.valores_carros.pop(matricula)
             self.carros.valores_carros.pop(matricula)
             remover_button.destroy()
             self.matricula_rem_entry.delete(0, tk.END)
-            self.listar_resultados(self.carros)
+            try:
+                if self.treeview_lista.get_children():
+                    self.listar_resultados(self.carros)
+            except:
+                pass
             
         if erro:
             self.show_error_message(erro)
@@ -422,17 +463,19 @@ class janela_inicial(tk.Tk):
     def gravar_catalogo(self):
         self.jan_gravar_cat = tk.Toplevel(self)
         self.jan_gravar_cat.title("Gravar Catalogo")
-        self.jan_gravar_cat.geometry("400x200+250+50")
+        self.jan_gravar_cat.geometry("500x200+250+50")
         
         font = ("Cascadia Mono", 12, "bold")
-        
-        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = "Gravar Catálogo em Ficheiro?", font = font, width = 40)
+        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nGravar Catálogo em Ficheiro?"
+        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = mensagem, font = font)
         self.gravar_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
         
         def ok_action():            
-            self.gravar_cat_label.config(text = "Catalogo Gravado", width = 40)
+            self.gravar_cat_label.config(text = "Catalogo Gravado")
             self.gravar_ok_button.destroy()
             self.gravar_no_button.grid(row = 1, column = 0, columnspan = 2 ,padx = 20, pady = 20)
+            self.adds_mod.clear()
+            self.rems_mod.clear()
             gravar_carros(self.carros, FILEPATH)
             
         def no_action():
@@ -444,20 +487,25 @@ class janela_inicial(tk.Tk):
         self.gravar_no_button = tk.Button(self.jan_gravar_cat, text = "Fechar", font = font, width = 15, command = no_action)
         self.gravar_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
         
+        self.jan_gravar_cat.columnconfigure(0, weight = 1)
+        self.jan_gravar_cat.columnconfigure(1, weight = 1)
+        
     def recarregar_catalogo(self):
         self.jan_recarregar_cat = tk.Toplevel(self)
         self.jan_recarregar_cat.title("Recarregar Catalogo")
-        self.jan_recarregar_cat.geometry("400x200+250+50")
+        self.jan_recarregar_cat.geometry("550x200+250+50")
         
         font = ("Cascadia Mono", 12, "bold")
-                
-        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = "Recarregar Catálogo do Ficheiro?", font = font, width = 40)
+        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nDescartar Alterações e Recarregar Catálogo do Ficheiro?"
+        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = mensagem, font = font)
         self.rec_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
         
         def ok_action():            
-            self.rec_cat_label.config(text = "Catalogo Recarregado", width = 40)
+            self.rec_cat_label.config(text = "Catalogo Recarregado")
             self.rec_ok_button.destroy()
             self.rec_no_button.grid(row = 1, column = 0, columnspan = 2 ,padx = 20, pady = 20)
+            self.adds_mod.valores_carros.clear()
+            self.rems_mod.valores_carros.clear()
             self.carros = ler_carros(FILEPATH)
             
         def no_action():
@@ -468,26 +516,11 @@ class janela_inicial(tk.Tk):
         
         self.rec_no_button = tk.Button(self.jan_recarregar_cat, text = "Fechar", font = font, width = 15, command = no_action)
         self.rec_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
-                                                                                      
-    def change_font(self, font_type: str):
-        self.title_label.config(font = (font_type, 16, "bold"))
-        self.listar_viaturas.config(font = (font_type, 12, "bold"))
-        self.pes_viaturas.config(font = (font_type, 12, "bold"))
-        self.add_viatura.config(font = (font_type, 12, "bold"))
-        self.rem_viatura.config(font = (font_type, 12, "bold"))
-        self.gravar_catalogo.config(font = (font_type, 12, "bold"))
-        self.recarregar_catalogo.config(font = (font_type, 12, "bold"))
-        
-    def get_font_list(self):
-        key_path = r"Software\Microsoft\Windows NT\CurrentVersion\Fonts"
-        self.font_list = []
-        font_key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key_path, 0, winreg.KEY_READ)
-        for i in range(winreg.QueryInfoKey(font_key)[1]):
-            font_name, n, _ = winreg.EnumValue(font_key, i)
-            if font_name[:-11] in font.families():
-                self.font_list.append(font_name[:-11])   
-        winreg.CloseKey(font_key)
-        
+                                                                             
+    
+        self.jan_recarregar_cat.columnconfigure(0, weight = 1)
+        self.jan_recarregar_cat.columnconfigure(1, weight = 1)
+                      
     def show_error_message(self, erro: str | list):    
             self.error_window = tk.Toplevel(self)
             self.error_window.title("Error de Introdução de Dados")
