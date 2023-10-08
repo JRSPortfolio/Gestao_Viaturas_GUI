@@ -44,8 +44,7 @@ class janela_inicial(tk.Tk):
         
         options.add_command(label = "Alterar Tipo de Letra", command = self.janela_tipo_letra)
         options.add_command(label = "Sair", command = self.quit)
-            
-        # menu
+
         menu_bar.add_cascade(label = "Opções", menu = options)
         
         self.config(menu = menu_bar)
@@ -336,6 +335,38 @@ class janela_inicial(tk.Tk):
         self.result_layout_canvas.columnconfigure(0, weight = 1)
         
     def janela_pesquisa(self):
+        def pesquisa_veiculos():
+            try:
+                procura, tipo = val_pes_options()
+                resultado = self.carros.pesquisa(procura, tipo)
+                if resultado:
+                    self.clean_list()
+                    self.listar_resultados(resultado)
+                    self.pesquisa_menu.destroy()
+                else:
+                    self.show_error_message('Não foram encontrados veiculos')
+                    self.pes_menu_entry.delete(0, tk.END)
+            except:
+                pass
+
+        def val_pes_options():
+            tipo = self.cbox_pes_menu.get().lower()
+            procura = self.pes_menu_entry.get()
+            match tipo:
+                case 'matricula':
+                    erro = val_mat(procura)
+                case 'marca':
+                    erro = val_marca(procura)
+                case 'modelo':
+                    erro = val_modelo(procura)
+                case 'data':
+                    erro = val_data(procura)
+            if erro:
+                self.show_error_message(erro)
+                self.pes_menu_entry.delete(0, tk.END)
+            else:
+                return procura, tipo
+            
         self.pesquisa_menu = tk.Toplevel(self)
         self.pesquisa_menu.title("Pesquisar Veículo")
         self.pesquisa_menu.geometry("450x150+250+50")
@@ -351,45 +382,77 @@ class janela_inicial(tk.Tk):
         self.pes_menu_entry.grid(row = 0, column = 1, padx = (0,20), pady = 30)
         
         self.pes_menu_button = tk.Button(self.pesquisa_menu, text="Pesquisar", width = 12, height = 1,
-                                        font = font, command = self.pesquisa_veiculos)
+                                        font = font, command = pesquisa_veiculos)
         self.pes_menu_button.grid(row = 1, column = 0,columnspan = 2 , padx = 20, pady = 10)
         
         self.pesquisa_menu.grid_columnconfigure(0, weight = 1)
         self.pesquisa_menu.grid_columnconfigure(1, weight = 1)
-        
-    def pesquisa_veiculos(self):
-        try:
-            procura, tipo = self.val_pes_options()
-            resultado = self.carros.pesquisa(procura, tipo)
-            if resultado:
-                self.clean_list()
-                self.listar_resultados(resultado)
-                self.pesquisa_menu.destroy()
-            else:
-                self.show_error_message('Não foram encontrados veiculos')
-                self.pes_menu_entry.delete(0, tk.END)
-        except:
-            pass
-
-    def val_pes_options(self):
-        tipo = self.cbox_pes_menu.get().lower()
-        procura = self.pes_menu_entry.get()
-        match tipo:
-            case 'matricula':
-                erro = val_mat(procura)
-            case 'marca':
-                erro = val_marca(procura)
-            case 'modelo':
-                erro = val_modelo(procura)
-            case 'data':
-                erro = val_data(procura)
-        if erro:
-            self.show_error_message(erro)
-            self.pes_menu_entry.delete(0, tk.END)
-        else:
-            return procura, tipo
-        
+                
     def janela_add_veiculo(self):
+        def val_add_veiculo():
+            matricula = self.matricula_add_entry.get().strip()
+            marca = self.marca_add_entry.get().strip()
+            modelo = self.modelo_add_entry.get().strip()
+            data = self.data_add_entry.get().strip()
+            
+            erro_mat = val_mat(matricula)
+            erro_marca = val_marca(marca)
+            erro_modelo = val_modelo(modelo)
+            erro_data = val_data(data)
+            
+            erros = []
+            
+            if erro_mat:
+                erros.append(erro_mat)
+                self.matricula_add_entry.delete(0, tk.END)
+            if erro_marca:
+                erros.append(erro_marca)
+                self.marca_add_entry.delete(0, tk.END)
+            if erro_modelo:
+                erros.append(erro_modelo)
+                self.modelo_add_entry.delete(0, tk.END)
+            if erro_data:
+                erros.append(erro_data)
+                self.data_add_entry.delete(0, tk.END)
+                
+            if not erro_mat:
+                erro_mat_dup = val_mat_duplicada(self.carros, matricula)
+                if erro_mat_dup:
+                    erros.append(erro_mat_dup)
+                    self.matricula_add_entry.delete(0, tk.END)
+            
+            if not erro_data:
+                erro_data_mat = val_data_de_mat(matricula, data)
+                if erro_data_mat:
+                    erros.append(erro_data_mat)
+                    self.matricula_add_entry.delete(0, tk.END)
+                    self.data_add_entry.delete(0, tk.END)
+                    
+            return erros
+            
+        def adicionar_veiculo():
+            erros = val_add_veiculo()
+            if erros:
+                self.show_error_message(erros)
+            else:
+                matricula = self.matricula_add_entry.get().strip()
+                marca = self.marca_add_entry.get().strip()
+                modelo = self.modelo_add_entry.get().strip()
+                data = self.data_add_entry.get().strip()
+                car = Carro(matricula, marca, modelo, data)
+                self.carros.append(car)
+                self.adds_mod.append(car)
+                self.veiculo_adicionado_message(matricula, marca, modelo, data)
+                self.jan_add_veiculo.destroy()
+                try:
+                    if self.treeview_lista.get_children():
+                        self.listar_resultados(self.carros)
+                except:
+                    pass
+        
+        def fechar_button():
+            self.jan_add_veiculo.destroy()
+            
         self.jan_add_veiculo = tk.Toplevel(self)
         self.jan_add_veiculo.title("Adicionar Veículo")
         self.jan_add_veiculo.geometry("470x350+250+50")
@@ -413,11 +476,8 @@ class janela_inicial(tk.Tk):
         self.modelo_add_entry.grid(row = 1, column = 1, padx =  10, pady = 5)
         self.matricula_add_entry.grid(row = 2, column = 1, padx =  10, pady = 5)
         self.data_add_entry.grid(row = 3, column = 1, padx =  10, pady = 5)
-        
-        def fechar_button():
-            self.jan_add_veiculo.destroy()
-            
-        self.add_add_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = self.subs_font, height = 10, command = self.adicionar_veiculo)
+                    
+        self.add_add_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = self.subs_font, height = 10, command = adicionar_veiculo)
         self.add_add_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
 
         self.add_close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = self.subs_font, width = 15, command = fechar_button)
@@ -425,69 +485,46 @@ class janela_inicial(tk.Tk):
         
         for i in range(4):
             self.jan_add_veiculo.grid_columnconfigure(i, weight = 1)
-            
-    def val_add_veiculo(self):
-        matricula = self.matricula_add_entry.get().strip()
-        marca = self.marca_add_entry.get().strip()
-        modelo = self.modelo_add_entry.get().strip()
-        data = self.data_add_entry.get().strip()
-        
-        erro_mat = val_mat(matricula)
-        erro_marca = val_marca(marca)
-        erro_modelo = val_modelo(modelo)
-        erro_data = val_data(data)
-        
-        erros = []
-        
-        if erro_mat:
-            erros.append(erro_mat)
-            self.matricula_add_entry.delete(0, tk.END)
-        if erro_marca:
-            erros.append(erro_marca)
-            self.marca_add_entry.delete(0, tk.END)
-        if erro_modelo:
-            erros.append(erro_modelo)
-            self.modelo_add_entry.delete(0, tk.END)
-        if erro_data:
-            erros.append(erro_data)
-            self.data_add_entry.delete(0, tk.END)
-            
-        if not erro_mat:
-            erro_mat_dup = val_mat_duplicada(self.carros, matricula)
-            if erro_mat_dup:
-                erros.append(erro_mat_dup)
-                self.matricula_add_entry.delete(0, tk.END)
-        
-        if not erro_data:
-            erro_data_mat = val_data_de_mat(matricula, data)
-            if erro_data_mat:
-                erros.append(erro_data_mat)
-                self.matricula_add_entry.delete(0, tk.END)
-                self.data_add_entry.delete(0, tk.END)
-                
-        return erros
-        
-    def adicionar_veiculo(self):
-        erros = self.val_add_veiculo()
-        if erros:
-            self.show_error_message(erros)
-        else:
-            matricula = self.matricula_add_entry.get().strip()
-            marca = self.marca_add_entry.get().strip()
-            modelo = self.modelo_add_entry.get().strip()
-            data = self.data_add_entry.get().strip()
-            car = Carro(matricula, marca, modelo, data)
-            self.carros.append(car)
-            self.adds_mod.append(car)
-            self.veiculo_adicionado_message(matricula, marca, modelo, data)
-            self.jan_add_veiculo.destroy()
-            try:
-                if self.treeview_lista.get_children():
-                    self.listar_resultados(self.carros_ordenados)
-            except:
-                pass
-            
+                        
     def janela_rem_veiculo(self):
+        def fechar_button():
+            self.jan_rem_veiculo.destroy()
+            
+        def rem_veiculo_proc(**kwargs):
+            def rem_button():
+                self.rem_msg_label.config(text = "Veiculo Removido", width = 150)
+                if carro not in self.adds_mod:
+                    self.rems_mod.append(carro)
+                else:
+                    self.adds_mod.valores_carros.pop(matricula)
+                self.carros.valores_carros.pop(matricula)
+                remover_button.destroy()
+                self.matricula_rem_entry.delete(0, tk.END)
+                try:
+                    if self.treeview_lista.get_children():
+                        self.listar_resultados(self.carros)
+                except:
+                    pass
+            
+            matricula = self.matricula_rem_entry.get().strip()
+            erro = val_mat(matricula)
+
+            self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '', font = self.subs_font, width = 200)
+            self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
+                        
+            if erro:
+                self.show_error_message(erro)
+                
+            elif matricula not in self.carros.valores_carros:
+                self.rem_msg_label.config(text = f"Não foi encontrada matricula {matricula}", width = 200)
+
+            else:
+                carro = self.carros.valores_carros.get(matricula)
+                message = f"Veiculo a remover:\nMatricula: {carro.matricula}\nMarca: {carro.marca}\nModelo: {carro.modelo}\nData: {carro.data}"
+                self.rem_msg_label.config(text = message, width = 150)
+                remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = self.subs_font, width = 15, command = rem_button)
+                remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
+
         self.jan_rem_veiculo = tk.Toplevel(self)
         self.jan_rem_veiculo.title("Remover Veículo")
         self.jan_rem_veiculo.geometry("470x400+250+50")
@@ -502,14 +539,11 @@ class janela_inicial(tk.Tk):
             sel_values = self.treeview_lista.item(self.treeview_lista.selection(), "values")
             matricula = sel_values[3]
             self.matricula_rem_entry.insert(0, matricula)
-            self.rem_veiculo_proc(matricula = matricula)
+            rem_veiculo_proc(matricula = matricula)
         except:
             pass
-        
-        def fechar_button():
-            self.jan_rem_veiculo.destroy()
-            
-        self.proc_rem_button = tk.Button(self.jan_rem_veiculo, text="Procurar Veiculo", width = 15 ,font = self.subs_font, command = self.rem_veiculo_proc)
+  
+        self.proc_rem_button = tk.Button(self.jan_rem_veiculo, text="Procurar Veiculo", width = 15 ,font = self.subs_font, command = rem_veiculo_proc)
         self.proc_rem_button.grid(row = 1, column = 0, columnspan = 2, padx = 10)
 
         self.rem_close_button = tk.Button(self.jan_rem_veiculo, text="Fechar", font = self.subs_font, width = 15, command = fechar_button)
@@ -517,51 +551,8 @@ class janela_inicial(tk.Tk):
         
         self.jan_rem_veiculo.grid_columnconfigure(0, weight = 1)
         self.jan_rem_veiculo.grid_columnconfigure(1, weight = 1)
-        
-    def rem_veiculo_proc(self, **kwargs):
-        matricula = self.matricula_rem_entry.get().strip()
-        erro = val_mat(matricula)
-
-        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '', font = self.subs_font, width = 200)
-        self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
-        
-        def rem_button():
-            self.rem_msg_label.config(text = "Veiculo Removido", width = 150)
-            if carro not in self.adds_mod:
-                self.rems_mod.append(carro)
-            else:
-                self.adds_mod.valores_carros.pop(matricula)
-            self.carros.valores_carros.pop(matricula)
-            remover_button.destroy()
-            self.matricula_rem_entry.delete(0, tk.END)
-            try:
-                if self.treeview_lista.get_children():
-                    self.listar_resultados(self.carros)
-            except:
-                pass
-            
-        if erro:
-            self.show_error_message(erro)
-            
-        elif matricula not in self.carros.valores_carros:
-            self.rem_msg_label.config(text = f"Não foi encontrada matricula {matricula}", width = 200)
-
-        else:
-            carro = self.carros.valores_carros.get(matricula)
-            message = f"Veiculo a remover:\nMatricula: {carro.matricula}\nMarca: {carro.marca}\nModelo: {carro.modelo}\nData: {carro.data}"
-            self.rem_msg_label.config(text = message, width = 150)
-            remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = self.subs_font, width = 15, command = rem_button)
-            remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
-                        
+                                
     def gravar_catalogo(self):
-        self.jan_gravar_cat = tk.Toplevel(self)
-        self.jan_gravar_cat.title("Gravar Catalogo")
-        self.jan_gravar_cat.geometry("500x200+250+50")
-        
-        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nGravar Catálogo em Ficheiro?"
-        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = mensagem, font = self.subs_font)
-        self.gravar_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
-        
         def ok_action():            
             self.gravar_cat_label.config(text = "Catalogo Gravado")
             self.gravar_ok_button.destroy()
@@ -569,10 +560,23 @@ class janela_inicial(tk.Tk):
             self.adds_mod.clear()
             self.rems_mod.clear()
             gravar_carros(self.carros, FILEPATH)
+            try:
+                if self.treeview_lista.get_children():
+                    self.listar_resultados(self.carros)
+            except:
+                pass
             
         def no_action():
             self.jan_gravar_cat.destroy()
-            
+        
+        self.jan_gravar_cat = tk.Toplevel(self)
+        self.jan_gravar_cat.title("Gravar Catalogo")
+        self.jan_gravar_cat.geometry("500x200+250+50")
+        
+        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nGravar Catálogo em Ficheiro?"
+        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = mensagem, font = self.subs_font)
+        self.gravar_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
+                    
         self.gravar_ok_button = tk.Button(self.jan_gravar_cat, text = "Gravar", font = self.subs_font, width = 15, command = ok_action)
         self.gravar_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
         
@@ -583,14 +587,6 @@ class janela_inicial(tk.Tk):
         self.jan_gravar_cat.columnconfigure(1, weight = 1)
         
     def recarregar_catalogo(self):
-        self.jan_recarregar_cat = tk.Toplevel(self)
-        self.jan_recarregar_cat.title("Recarregar Catalogo")
-        self.jan_recarregar_cat.geometry("550x200+250+50")
-        
-        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nDescartar Alterações e Recarregar Catálogo do Ficheiro?"
-        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = mensagem, font = self.subs_font)
-        self.rec_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
-        
         def ok_action():            
             self.rec_cat_label.config(text = "Catalogo Recarregado")
             self.rec_ok_button.destroy()
@@ -598,10 +594,23 @@ class janela_inicial(tk.Tk):
             self.adds_mod.valores_carros.clear()
             self.rems_mod.valores_carros.clear()
             self.carros = ler_carros(FILEPATH)
+            try:
+                if self.treeview_lista.get_children():
+                    self.listar_resultados(self.carros)
+            except:
+                pass
             
         def no_action():
-            self.jan_recarregar_cat.destroy()
-            
+            self.jan_recarregar_cat.destroy()   
+        
+        self.jan_recarregar_cat = tk.Toplevel(self)
+        self.jan_recarregar_cat.title("Recarregar Catalogo")
+        self.jan_recarregar_cat.geometry("550x200+250+50")
+        
+        mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nDescartar Alterações e Recarregar Catálogo do Ficheiro?"
+        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = mensagem, font = self.subs_font)
+        self.rec_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
+                    
         self.rec_ok_button = tk.Button(self.jan_recarregar_cat, text = "Recarregar", font = self.subs_font, width = 15, command = ok_action)
         self.rec_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
         
@@ -632,6 +641,9 @@ class janela_inicial(tk.Tk):
         close_button.pack(pady=10)
             
     def veiculo_adicionado_message(self, matricula, marca, modelo, data):    
+        def ok_button():
+            self.veiculo_add.destroy()
+            
         self.veiculo_add = tk.Toplevel(self)
         self.veiculo_add.title("Inserção Correcta")
 
@@ -639,9 +651,6 @@ class janela_inicial(tk.Tk):
         
         msg_label = tk.Label(self.veiculo_add, text = message, font = self.subs_font)
         msg_label.pack(padx = 20, pady = 10)
-                
-        def ok_button():
-            self.veiculo_add.destroy()
 
         close_button = tk.Button(self.veiculo_add, text="OK", font = self.subs_font, width = 12, command = ok_button)
         close_button.pack(pady=10)
