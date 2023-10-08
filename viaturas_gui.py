@@ -11,14 +11,20 @@ class janela_inicial(tk.Tk):
         self.carros = ler_carros(FILEPATH)
         self.adds_mod = CatalogoCarros()
         self.rems_mod = CatalogoCarros()
-        self.detail_labels = []
+        
+        self.treeview_font_h = ("Cascadia Mono", 12, "bold")
+        self.treeview_font_l = ("Cascadia Mono", 10)
+        self.subs_font = ("Cascadia Mono", 12, "bold")
+        self.comon_font = ("Cascadia Mono", 12, "bold")
         
         self.title("Catalogo de Automóveis")
         self.geometry("600x800+100+50")
         
         self.grid_columnconfigure(0, weight = 1)
         self.grid_columnconfigure(1, weight = 1)
+        self.grid_rowconfigure(4, weight = 1)
         
+        self.subs_font = ("Cascadia Mono", 12, "bold")
         self.comon_font = ("Cascadia Mono", 12, "bold")
         
         self.set_title()
@@ -57,18 +63,73 @@ class janela_inicial(tk.Tk):
             return font_list
         
         def change_font(font_type: str):            
-            self.title_label.config(font = (font_type, 16, "bold"))
-            
-            self.listar_viaturas.config(font = (font_type, 12, "bold"))
-            self.pes_viaturas.config(font = (font_type, 12, "bold"))
-            self.add_viatura.config(font = (font_type, 12, "bold"))
-            self.rem_viatura.config(font = (font_type, 12, "bold"))
-            self.gravar_catalogo.config(font = (font_type, 12, "bold"))
-            self.recarregar_catalogo.config(font = (font_type, 12, "bold"))
-            
+            for key in fonts_selection.keys():
+                if fonts_selection[key] == True:
+                    print (fonts_selection[key])
+                    if key == "titulo":
+                        self.title_label.config(font = (font_type, 16, "bold"))
+                    elif key == "opcoes":
+                        for widget in (self.listar_viaturas, self.pes_viaturas, self.add_viatura, self.rem_viatura, self.gravar_catalogo,
+                                       self.recarregar_catalogo, self.limpar_res_lay):
+                            widget.config(font = (font_type, 12, "bold"))
+                    elif key == "listing":
+                        try:
+                            self.treeview_font_h = (font_type, 12, "bold")
+                            self.treeview_font_l = (font_type, 10)   
+                            style = ttk.Style()
+                            style.configure("Treeview.Heading", font = (font_type, 12, "bold"))
+                            style.configure("Treeview", font = (font_type, 10))
+                            self.treeview_lista.config(style = "Treeview")
+                        except AttributeError:
+                            self.treeview_font_h = (font_type, 12, "bold")
+                            self.treeview_font_l = (font_type, 10)                      
+                        except tk.TclError:
+                            self.treeview_font_h = (font_type, 12, "bold")
+                            self.treeview_font_l = (font_type, 10)
+                    elif key == "subs":
+                        try:
+                            self.subs_font = (font_type, 12, "bold")
+                            for widget in (self.marca_add_label, self.modelo_add_label, self.matricula_add_label, self.data_add_label,
+                                           self.marca_add_entry, self.modelo_add_entry, self.matricula_add_entry, self.data_add_entry,
+                                           self.add_add_button, self.add_close_button):
+                                widget.config(font = (font_type, 12, "bold"))
+                        except tk.TclError:
+                            self.subs_font = (font_type, 12, "bold")
+                        except AttributeError:
+                            self.subs_font = (font_type, 12, "bold")
+                            
+                        try:
+                            self.subs_font = (font_type, 12, "bold")
+                            for widget in (self.matricula_rem_label, self.matricula_rem_entry, self.proc_rem_button, self.rem_close_button):
+                                widget.config(font = (font_type, 12, "bold"))
+                        except tk.TclError:
+                            self.subs_font = (font_type, 12, "bold")
+                        except AttributeError:
+                            self.subs_font = (font_type, 12, "bold")
+                            
+                        try:
+                            self.subs_font = (font_type, 12, "bold")
+                            for widget in (self.gravar_cat_label,  self.gravar_ok_button, self.gravar_no_button):
+                                widget.config(font = (font_type, 12, "bold"))
+                        except tk.TclError:
+                            self.subs_font = (font_type, 12, "bold")
+                        except AttributeError:
+                            self.subs_font = (font_type, 12, "bold")
+                            
+                        try:
+                            self.subs_font = (font_type, 12, "bold")
+                            for widget in ( self.rec_cat_label, self.rec_ok_button, self.rec_no_button):
+                                widget.config(font = (font_type, 12, "bold"))
+                        except tk.TclError:
+                            self.subs_font = (font_type, 12, "bold")
+                        except AttributeError:
+                            self.subs_font = (font_type, 12, "bold")
+
         def on_mousewheel(event):
+            widget = event.widget.winfo_containing(event.x_root, event.y_root)
             try:
-                lista_fontes_canvas.yview_scroll(-1 * (event.delta // 120), "units")
+                if widget == fonts_listbox:
+                    fonts_listbox.yview_scroll(-1 * (event.delta // 120), "units")
             except:
                 pass
             
@@ -78,17 +139,63 @@ class janela_inicial(tk.Tk):
                 index = sel_indices[0]
                 escolha = fonts_listbox.get(index)
                 change_font(escolha)
-                # lista_fontes.destroy()
+                
+        def sections_selection():
+            reset_fonts_selection()            
+            if check_titulo.get():
+                fonts_selection["titulo"] = True
+            else:
+                fonts_selection["titulo"] = False
+                              
+            if check_opcoes.get():
+                fonts_selection["opcoes"] = True
+            else:
+                fonts_selection["opcoes"] = False
+                
+            if check_list.get():
+                fonts_selection["listing"] = True
+            else:
+                fonts_selection["listing"] = False
+                
+            if check_subs.get():
+                fonts_selection["subs"] = True
+            else:
+                fonts_selection["subs"] = False
+                            
+        def reset_fonts_selection():
+            for key in fonts_selection.keys():
+                fonts_selection[key] = False
+           
+        lista_fontes_window = tk.Toplevel(self)
+        lista_fontes_window.title("Alterar Tipo de Letra")
+        lista_fontes_window.geometry("400x500+750+50")
         
-        lista_fontes = tk.Toplevel(self)
-        lista_fontes.title("Alterar Tipo de Letra")
-        lista_fontes.geometry("300x500+750+50")
+        font_type = ("Cascadia Mono", 12, "bold")
         
-        lista_fontes_canvas = tk.Canvas(lista_fontes)
-        lista_fontes_canvas.grid(row = 0, column = 0, columnspan = 2, sticky="nsew")
-
-        fonts_listbox = tk.Listbox(lista_fontes_canvas)
-        fonts_listbox.grid(row = 0, column = 0, sticky = "nsew")
+        font_options = tk.Canvas(lista_fontes_window)
+        font_options.grid(row = 0, column = 0, columnspan = 2, pady = 10, sticky = "nsew")
+        fonts_listbox = tk.Listbox(lista_fontes_window)
+        fonts_listbox.grid(row = 1, column = 0, columnspan = 2, padx = 10, pady = 20, sticky = "nsew")
+        
+        check_titulo = tk.BooleanVar()
+        check_opcoes = tk.BooleanVar()
+        check_list =  tk.BooleanVar()
+        check_subs = tk.BooleanVar()
+        fonts_selection = {'titulo': False, 'opcoes': False, 'listing': False, 'subs': False}
+                
+        titulo_button = ttk.Checkbutton(font_options, text = "Cabeçalho", variable = check_titulo, onvalue = True, offvalue = False, command = sections_selection)
+        titulo_button.grid(row = 0, column = 0, padx = (10, 5))
+        opcoes_button = ttk.Checkbutton(font_options, text = "Opções", variable = check_opcoes, onvalue = True, offvalue = False,  command = sections_selection)
+        opcoes_button.grid(row = 0, column = 1, padx = 5)
+        list_button = ttk.Checkbutton(font_options, text = "Resultados", variable = check_list, onvalue = True, offvalue = False,  command = sections_selection)
+        list_button.grid(row = 0, column = 2, padx = 5)
+        subs_button = ttk.Checkbutton(font_options, text = "Sub-Janelas", variable = check_subs, onvalue = True, offvalue = False,  command = sections_selection)
+        subs_button.grid(row = 0, column = 3, padx = (5, 10))
+        
+        sair_button = tk.Button(lista_fontes_window, text = "Sair", font = font_type, command = lista_fontes_window.destroy)
+        sair_button.grid(row = 2, column = 0, pady = 20)
+        escolher_button = tk.Button(lista_fontes_window, text = "Escolher", font = font_type, command = seleccao)
+        escolher_button.grid(row = 2, column = 1, pady = 20)
         
         font_list = get_font_list()
                 
@@ -96,28 +203,25 @@ class janela_inicial(tk.Tk):
         for i in font_list:
             fonts_listbox.insert(y, i)
             y += 1
-                
-        ttk.Button(lista_fontes, text = "Escolher", command = seleccao).grid(row = 1, column = 0, columnspan = 2, pady=20)
         
-        scrollbar = Scrollbar(lista_fontes_canvas, orient=tk.VERTICAL, command = fonts_listbox.yview)
-        scrollbar.grid(row = 0, column = 1, sticky="ns")
+        scrollbar = Scrollbar(fonts_listbox, orient=tk.VERTICAL, command = fonts_listbox.yview)
+        scrollbar.grid(row = 1, column = 1, sticky = "ns")
         fonts_listbox.configure(yscrollcommand = scrollbar.set)
         
-        lista_fontes.update_idletasks()
-        lista_fontes_canvas.config(scrollregion = lista_fontes_canvas.bbox("all"))
+        lista_fontes_window.grid_columnconfigure(0, weight = 1)
+        lista_fontes_window.grid_columnconfigure(1, weight = 1)
+        lista_fontes_window.grid_rowconfigure(1, weight = 1)
         
-        lista_fontes.grid_columnconfigure(0, weight = 1)
-        lista_fontes.grid_columnconfigure(1, weight = 1)
-        lista_fontes_canvas.grid_columnconfigure(0, weight = 1)
-        lista_fontes_canvas.grid_columnconfigure(1, weight = 0)
+        font_options.grid_columnconfigure(0, weight = 1)
+        font_options.grid_columnconfigure(1, weight = 1)
+        font_options.grid_columnconfigure(2, weight = 1)
+        font_options.grid_columnconfigure(3, weight = 1)
+        
         fonts_listbox.grid_columnconfigure(0, weight = 1)
         fonts_listbox.grid_columnconfigure(1, weight = 0)
+        fonts_listbox.grid_rowconfigure(1, weight = 1)
         
-        lista_fontes.grid_rowconfigure(0, weight = 1)
-        lista_fontes_canvas.grid_rowconfigure(0, weight = 1)
-        fonts_listbox.grid_rowconfigure(0, weight = 1)
-        
-        lista_fontes_canvas.bind_all("<MouseWheel>", on_mousewheel)
+        fonts_listbox.bind_all("<MouseWheel>", on_mousewheel)
                                     
     def buttons_layout(self):
         self.listar_viaturas = tk.Button(self, text="Listar Viaturas", width = 30, height = 2 ,
@@ -142,7 +246,8 @@ class janela_inicial(tk.Tk):
         
     def result_layout(self):
         self.result_layout_canvas = tk.Canvas(self)
-        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10), sticky = 'ew')
+        self.result_layout_canvas.grid(row = 4, column = 0, columnspan = 2, padx = 0, pady = (80, 10), sticky = 'nsew')
+        self.result_layout_canvas.grid_rowconfigure(0, weight = 1)
                                             
     def limpar_result_layout(self):
         self.limpar_canvas = tk.Canvas(self)
@@ -154,12 +259,7 @@ class janela_inicial(tk.Tk):
         self.limpar_canvas.grid_columnconfigure(0, weight = 1)
         
     def clean_list(self):
-        for group in self.detail_labels:
-            for label in group:
-                label.destroy()
-        self.detail_labels.clear
         try:
-            # self.list_scrollbar.destroy()
             self.treeview_lista.destroy()
             self.result_layout_canvas.destroy()
             self.result_layout()
@@ -179,60 +279,57 @@ class janela_inicial(tk.Tk):
             pass
                   
     def listar_resultados(self, carros: CatalogoCarros):
+        def listar():
+            if self.treeview_lista.get_children():
+                self.treeview_lista.delete(*self.treeview_lista.get_children())
+                
+            for car in carros_ordenados:
+                self.treeview_lista.insert('', tk.END, values = (car.marca, car.modelo, car.data, car.matricula), tags = "cor")
+                            
+            scrollbar = ttk.Scrollbar(self.result_layout_canvas, orient=tk.VERTICAL, command = self.treeview_lista.yview)
+            self.treeview_lista.configure(yscroll=scrollbar.set)
+            scrollbar.grid(row = 0, column = 1, sticky = 'ns')
+                        
+        def ord_marca():
+            nonlocal carros_ordenados
+            carros_ordenados = carros.ordenar_carros_marca()
+            listar()
+
+        def ord_modelo():
+            nonlocal carros_ordenados
+            carros_ordenados = carros.ordenar_carros_modelo()
+            listar()
+            
+        def ord_data():
+            nonlocal carros_ordenados
+            carros_ordenados = carros.ordenar_carros_data()
+            listar()
+            
+        def ord_matricula():
+            nonlocal carros_ordenados
+            carros_ordenados = carros.ordenar_carros_matricula()
+            listar()
+        
         cols = ("marca", "modelo", "data", "matricula")
         
-        self.carros_ordenados = carros
+        carros_ordenados = carros
         
         style = ttk.Style()
-        style.configure("Treeview.Heading", font = ("Cascadia Mono", 12, "bold"))
-        style.configure("Treeview", font=("Cascadia Mono", 10))
+        style.configure("Treeview.Heading", font = self.treeview_font_h)
+        style.configure("Treeview", font = self.treeview_font_l)
         
         self.treeview_lista = ttk.Treeview(self.result_layout_canvas, columns = cols, show = 'headings', style = "Treeview")
-        self.treeview_lista.grid(row = 0, column = 0, sticky = 'ew', padx = 30)
+        self.treeview_lista.grid(row = 0, column = 0, sticky = 'nsew', padx = 30)
         self.treeview_lista.tag_configure("cor", background = "whitesmoke")
         
         for col in cols:
             self.treeview_lista.column(col, width = 130, anchor = tk.CENTER)
         
-        self.treeview_lista.heading("marca", text = "Marca", anchor = tk.CENTER, command = lambda: ord_marca(carros))
-        self.treeview_lista.heading("modelo", text = "Modelo", anchor = tk.CENTER, command = lambda: ord_modelo(carros))
-        self.treeview_lista.heading("data", text = "Data", anchor = tk.CENTER, command = lambda: ord_data(carros))
-        self.treeview_lista.heading("matricula", text = "Matricula", anchor = tk.CENTER, command = lambda: ord_matricula(carros))
+        self.treeview_lista.heading("marca", text = "Marca", anchor = tk.CENTER, command = ord_marca)
+        self.treeview_lista.heading("modelo", text = "Modelo", anchor = tk.CENTER, command = ord_modelo)
+        self.treeview_lista.heading("data", text = "Data", anchor = tk.CENTER, command = ord_data)
+        self.treeview_lista.heading("matricula", text = "Matricula", anchor = tk.CENTER, command = ord_matricula)
         
-        def listar():
-            if self.treeview_lista.get_children():
-                self.treeview_lista.delete(*self.treeview_lista.get_children())
-                
-            i = 1
-            for car in self.carros_ordenados:
-                self.treeview_lista.insert('', tk.END, values = (car.marca, car.modelo, car.data, car.matricula), tags = "cor")
-                i += 1
-            
-            if i > 12:
-                self.treeview_lista.config(height = 12)
-                scrollbar = ttk.Scrollbar(self.result_layout_canvas, orient=tk.VERTICAL, command = self.treeview_lista.yview)
-                self.treeview_lista.configure(yscroll=scrollbar.set)
-                scrollbar.grid(row = 0, column = 1, sticky = 'ns')
-            else:
-                self.treeview_lista.config(height = i)
-                
-        
-        def ord_marca(carros):
-            self.carros_ordenados = carros.ordenar_carros_marca()
-            listar()
-
-        def ord_modelo(carros):
-            self.carros_ordenados = carros.ordenar_carros_modelo()
-            listar()
-            
-        def ord_data(carros):
-            self.carros_ordenados = carros.ordenar_carros_data()
-            listar()
-            
-        def ord_matricula(carros):
-            self.carros_ordenados = carros.ordenar_carros_matricula()
-            listar()
-
         listar()
 
         self.bind("<Button-1>", self.limpar_sel)
@@ -296,18 +393,16 @@ class janela_inicial(tk.Tk):
         self.jan_add_veiculo = tk.Toplevel(self)
         self.jan_add_veiculo.title("Adicionar Veículo")
         self.jan_add_veiculo.geometry("470x350+250+50")
-        
-        font = ("Cascadia Mono", 12, "bold")
-        
-        self.marca_add_label = tk.Label(self.jan_add_veiculo, text = 'Marca', font = font)
-        self.modelo_add_label = tk.Label(self.jan_add_veiculo, text = 'Modelo', font = font)
-        self.matricula_add_label = tk.Label(self.jan_add_veiculo, text = 'Matricula', font = font)
-        self.data_add_label = tk.Label(self.jan_add_veiculo, text = 'Data', font = font)
+                
+        self.marca_add_label = tk.Label(self.jan_add_veiculo, text = 'Marca', font = self.subs_font)
+        self.modelo_add_label = tk.Label(self.jan_add_veiculo, text = 'Modelo', font = self.subs_font)
+        self.matricula_add_label = tk.Label(self.jan_add_veiculo, text = 'Matricula', font = self.subs_font)
+        self.data_add_label = tk.Label(self.jan_add_veiculo, text = 'Data', font = self.subs_font)
     
-        self.marca_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
-        self.modelo_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
-        self.matricula_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
-        self.data_add_entry = tk.Entry(self.jan_add_veiculo, font = font)
+        self.marca_add_entry = tk.Entry(self.jan_add_veiculo, font = self.subs_font)
+        self.modelo_add_entry = tk.Entry(self.jan_add_veiculo, font = self.subs_font)
+        self.matricula_add_entry = tk.Entry(self.jan_add_veiculo, font = self.subs_font)
+        self.data_add_entry = tk.Entry(self.jan_add_veiculo, font = self.subs_font)
         
         self.marca_add_label.grid(row = 0, column = 0, padx =  20, pady = (30, 5))
         self.modelo_add_label.grid(row = 1, column = 0, padx = 20, pady = 5)
@@ -322,11 +417,11 @@ class janela_inicial(tk.Tk):
         def fechar_button():
             self.jan_add_veiculo.destroy()
             
-        close_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = font, height = 10, command = self.adicionar_veiculo)
-        close_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
+        self.add_add_button = tk.Button(self.jan_add_veiculo, text="Adicionar", font = self.subs_font, height = 10, command = self.adicionar_veiculo)
+        self.add_add_button.grid(row = 0, column = 2, rowspan = 4, padx = 10, pady = (40,0))
 
-        close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = font, width = 15, command = fechar_button)
-        close_button.grid(row = 4, column = 0, columnspan = 3, pady=10)
+        self.add_close_button = tk.Button(self.jan_add_veiculo, text="Fechar", font = self.subs_font, width = 15, command = fechar_button)
+        self.add_close_button.grid(row = 4, column = 0, columnspan = 3, pady=10)
         
         for i in range(4):
             self.jan_add_veiculo.grid_columnconfigure(i, weight = 1)
@@ -396,11 +491,9 @@ class janela_inicial(tk.Tk):
         self.jan_rem_veiculo = tk.Toplevel(self)
         self.jan_rem_veiculo.title("Remover Veículo")
         self.jan_rem_veiculo.geometry("470x400+250+50")
-        
-        font = ("Cascadia Mono", 12, "bold")
-        
-        self.matricula_rem_label = tk.Label(self.jan_rem_veiculo, text = 'Matricula', font = font)
-        self.matricula_rem_entry = tk.Entry(self.jan_rem_veiculo, font = font)
+            
+        self.matricula_rem_label = tk.Label(self.jan_rem_veiculo, text = 'Matricula', font = self.subs_font)
+        self.matricula_rem_entry = tk.Entry(self.jan_rem_veiculo, font = self.subs_font)
         
         self.matricula_rem_label.grid(row = 0, column = 0, padx = 20, pady = 5)
         self.matricula_rem_entry.grid(row = 0, column = 1, padx =  10, pady = 5)
@@ -416,11 +509,11 @@ class janela_inicial(tk.Tk):
         def fechar_button():
             self.jan_rem_veiculo.destroy()
             
-        proc_rem_button = tk.Button(self.jan_rem_veiculo, text="Procurar Veiculo", width = 15 ,font = font, command = self.rem_veiculo_proc)
-        proc_rem_button.grid(row = 1, column = 0, columnspan = 2, padx = 10)
+        self.proc_rem_button = tk.Button(self.jan_rem_veiculo, text="Procurar Veiculo", width = 15 ,font = self.subs_font, command = self.rem_veiculo_proc)
+        self.proc_rem_button.grid(row = 1, column = 0, columnspan = 2, padx = 10)
 
-        close_button = tk.Button(self.jan_rem_veiculo, text="Fechar", font = font, width = 15, command = fechar_button)
-        close_button.grid(row = 2, column = 0, columnspan = 2, pady=10)
+        self.rem_close_button = tk.Button(self.jan_rem_veiculo, text="Fechar", font = self.subs_font, width = 15, command = fechar_button)
+        self.rem_close_button.grid(row = 2, column = 0, columnspan = 2, pady=10)
         
         self.jan_rem_veiculo.grid_columnconfigure(0, weight = 1)
         self.jan_rem_veiculo.grid_columnconfigure(1, weight = 1)
@@ -428,8 +521,8 @@ class janela_inicial(tk.Tk):
     def rem_veiculo_proc(self, **kwargs):
         matricula = self.matricula_rem_entry.get().strip()
         erro = val_mat(matricula)
-        font = ("Cascadia Mono", 12, "bold")
-        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '', font = font, width = 200)
+
+        self.rem_msg_label = tk.Label(self.jan_rem_veiculo, text = '', font = self.subs_font, width = 200)
         self.rem_msg_label.grid(row = 3, column = 0,columnspan = 2, padx = 20, pady = 5)
         
         def rem_button():
@@ -457,7 +550,7 @@ class janela_inicial(tk.Tk):
             carro = self.carros.valores_carros.get(matricula)
             message = f"Veiculo a remover:\nMatricula: {carro.matricula}\nMarca: {carro.marca}\nModelo: {carro.modelo}\nData: {carro.data}"
             self.rem_msg_label.config(text = message, width = 150)
-            remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = font, width = 15, command = rem_button)
+            remover_button = tk.Button(self.jan_rem_veiculo, text="Remover", font = self.subs_font, width = 15, command = rem_button)
             remover_button.grid(row = 4, column = 0, columnspan = 2, pady=10)
                         
     def gravar_catalogo(self):
@@ -465,9 +558,8 @@ class janela_inicial(tk.Tk):
         self.jan_gravar_cat.title("Gravar Catalogo")
         self.jan_gravar_cat.geometry("500x200+250+50")
         
-        font = ("Cascadia Mono", 12, "bold")
         mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nGravar Catálogo em Ficheiro?"
-        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = mensagem, font = font)
+        self.gravar_cat_label = tk.Label(self.jan_gravar_cat, text = mensagem, font = self.subs_font)
         self.gravar_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
         
         def ok_action():            
@@ -481,10 +573,10 @@ class janela_inicial(tk.Tk):
         def no_action():
             self.jan_gravar_cat.destroy()
             
-        self.gravar_ok_button = tk.Button(self.jan_gravar_cat, text = "Gravar", font = font, width = 15, command = ok_action)
+        self.gravar_ok_button = tk.Button(self.jan_gravar_cat, text = "Gravar", font = self.subs_font, width = 15, command = ok_action)
         self.gravar_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
         
-        self.gravar_no_button = tk.Button(self.jan_gravar_cat, text = "Fechar", font = font, width = 15, command = no_action)
+        self.gravar_no_button = tk.Button(self.jan_gravar_cat, text = "Fechar", font = self.subs_font, width = 15, command = no_action)
         self.gravar_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
         
         self.jan_gravar_cat.columnconfigure(0, weight = 1)
@@ -495,9 +587,8 @@ class janela_inicial(tk.Tk):
         self.jan_recarregar_cat.title("Recarregar Catalogo")
         self.jan_recarregar_cat.geometry("550x200+250+50")
         
-        font = ("Cascadia Mono", 12, "bold")
         mensagem = f"Foram adicionados {len(self.adds_mod)} veiculos e removidos {len(self.rems_mod)} veiculos\nDescartar Alterações e Recarregar Catálogo do Ficheiro?"
-        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = mensagem, font = font)
+        self.rec_cat_label = tk.Label(self.jan_recarregar_cat, text = mensagem, font = self.subs_font)
         self.rec_cat_label.grid(row = 0, column = 0, columnspan = 2, padx = 20, pady = 30)
         
         def ok_action():            
@@ -511,10 +602,10 @@ class janela_inicial(tk.Tk):
         def no_action():
             self.jan_recarregar_cat.destroy()
             
-        self.rec_ok_button = tk.Button(self.jan_recarregar_cat, text = "Recarregar", font = font, width = 15, command = ok_action)
+        self.rec_ok_button = tk.Button(self.jan_recarregar_cat, text = "Recarregar", font = self.subs_font, width = 15, command = ok_action)
         self.rec_ok_button.grid(row = 1, column = 0, padx = 20, pady = 20)
         
-        self.rec_no_button = tk.Button(self.jan_recarregar_cat, text = "Fechar", font = font, width = 15, command = no_action)
+        self.rec_no_button = tk.Button(self.jan_recarregar_cat, text = "Fechar", font = self.subs_font, width = 15, command = no_action)
         self.rec_no_button.grid(row = 1, column = 1, padx = 20, pady = 20)
                                                                              
     
@@ -522,38 +613,38 @@ class janela_inicial(tk.Tk):
         self.jan_recarregar_cat.columnconfigure(1, weight = 1)
                       
     def show_error_message(self, erro: str | list):    
-            self.error_window = tk.Toplevel(self)
-            self.error_window.title("Error de Introdução de Dados")
+        self.error_window = tk.Toplevel(self)
+        self.error_window.title("Error de Introdução de Dados")
 
-            if isinstance(erro, str):
-                error_label = tk.Label(self.error_window, text = erro, font = ("Cascadia Mono", 12, "bold"))
+        if isinstance(erro, str):
+            error_label = tk.Label(self.error_window, text = erro, font = self.subs_font)
+            error_label.pack(padx = 20, pady = 10)
+        
+        else:
+            for i in erro:
+                error_label = tk.Label(self.error_window, text = i, font = self.subs_font)
                 error_label.pack(padx = 20, pady = 10)
-            
-            else:
-                for i in erro:
-                    error_label = tk.Label(self.error_window, text = i, font = ("Cascadia Mono", 12, "bold"))
-                    error_label.pack(padx = 20, pady = 10)
-                    
-            def fechar_button():
-                self.error_window.destroy()
+                
+        def fechar_button():
+            self.error_window.destroy()
 
-            close_button = tk.Button(self.error_window, text="Fechar", font = ("Cascadia Mono", 12, "bold"),command = fechar_button)
-            close_button.pack(pady=10)
+        close_button = tk.Button(self.error_window, text="Fechar", font = self.subs_font, command = fechar_button)
+        close_button.pack(pady=10)
             
     def veiculo_adicionado_message(self, matricula, marca, modelo, data):    
-            self.veiculo_add = tk.Toplevel(self)
-            self.veiculo_add.title("Inserção Correcta")
+        self.veiculo_add = tk.Toplevel(self)
+        self.veiculo_add.title("Inserção Correcta")
 
-            message = f"Veiculo adicionado com os seguintes dados: \nmarca: {marca}\nmodelo: {modelo}\nmatricula: {matricula}\ndata: {data}"        
-            
-            msg_label = tk.Label(self.veiculo_add, text = message, font = ("Cascadia Mono", 12, "bold"))
-            msg_label.pack(padx = 20, pady = 10)
-                    
-            def ok_button():
-                self.veiculo_add.destroy()
+        message = f"Veiculo adicionado com os seguintes dados: \nmarca: {marca}\nmodelo: {modelo}\nmatricula: {matricula}\ndata: {data}"        
+        
+        msg_label = tk.Label(self.veiculo_add, text = message, font = self.subs_font)
+        msg_label.pack(padx = 20, pady = 10)
+                
+        def ok_button():
+            self.veiculo_add.destroy()
 
-            close_button = tk.Button(self.veiculo_add, text="OK", font = ("Cascadia Mono", 14, "bold"), width = 12, command = ok_button)
-            close_button.pack(pady=10)
+        close_button = tk.Button(self.veiculo_add, text="OK", font = self.subs_font, width = 12, command = ok_button)
+        close_button.pack(pady=10)
 
 janela = janela_inicial()
 janela.mainloop()
