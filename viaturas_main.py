@@ -1,8 +1,8 @@
-from viaturas_instrucoes import *
+from viaturas_gui import JanelaInicial
                     
 def main():
-    carros = ler_carros(FILEPATH)
-    menu(carros)
+    janela = JanelaInicial()
+    janela.mainloop()
 
 if __name__ == "__main__":
     main()

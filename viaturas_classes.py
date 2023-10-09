@@ -8,10 +8,7 @@ class Carro:
         self.marca = marca
         self.modelo = modelo
         self.data = data
-    
-    def __str__ (self):
-        return f"Marca : {self.marca} - Modelo: {self.modelo} - Matricula: {self.matricula} - Data: {self.data}"
-    
+
     @classmethod
     def from_csv(cls, linha: str, delim = CSV_DEFAULT_DELIM):
         attrs = linha.split(delim)
@@ -21,19 +18,12 @@ class Carro:
             modelo = str(attrs[2]),
             data = str(attrs[3])
         )    
-        
-    def __iter__(self):
-        car_list = [self.matricula, self.marca, self.modelo, self.data]
-        for i in car_list:
-            yield i
-            
+
 class CatalogoCarros:
     def __init__(self):
         self._carros = {}
         
     def append(self, car: Carro):
-        # if car.matricula in self._carros:
-        #     raise ValorDuplicado(f"Já existe o carro com a matricula {car.matricula} no catalogo.")
         self._carros[car.matricula] = car    
                               
     def pesquisa(self, procura: str, tipo: str):
@@ -97,8 +87,3 @@ class CatalogoCarros:
     def valores_carros(self):
         return self._carros  
     
-class AtributoInvalido(ValueError):
-    pass
-
-class ValorDuplicado(Exception):
-    pass

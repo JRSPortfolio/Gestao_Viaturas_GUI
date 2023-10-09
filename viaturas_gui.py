@@ -4,7 +4,7 @@ import winreg
 from op_ficheiros import *
 from viaturas_validacoes import *
 
-class janela_inicial(tk.Tk):
+class JanelaInicial(tk.Tk):
     def __init__(self):
         super().__init__()
         
@@ -64,7 +64,6 @@ class janela_inicial(tk.Tk):
         def change_font(font_type: str):            
             for key in fonts_selection.keys():
                 if fonts_selection[key] == True:
-                    print (fonts_selection[key])
                     if key == "titulo":
                         self.title_label.config(font = (font_type, 16, "bold"))
                     elif key == "opcoes":
@@ -557,8 +556,8 @@ class janela_inicial(tk.Tk):
             self.gravar_cat_label.config(text = "Catalogo Gravado")
             self.gravar_ok_button.destroy()
             self.gravar_no_button.grid(row = 1, column = 0, columnspan = 2 ,padx = 20, pady = 20)
-            self.adds_mod.clear()
-            self.rems_mod.clear()
+            self.adds_mod.valores_carros.clear()
+            self.rems_mod.valores_carros.clear()
             gravar_carros(self.carros, FILEPATH)
             try:
                 if self.treeview_lista.get_children():
@@ -655,6 +654,4 @@ class janela_inicial(tk.Tk):
         close_button = tk.Button(self.veiculo_add, text="OK", font = self.subs_font, width = 12, command = ok_button)
         close_button.pack(pady=10)
 
-janela = janela_inicial()
-janela.mainloop()
 
